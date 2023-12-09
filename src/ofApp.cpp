@@ -33,20 +33,23 @@ void ofApp::setup(){
     gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
     gui1.add(gravedadY.set("gravedad Y",-1.4,-2.0,2.0));
     gui1.add(blur.set("blur",1.5,0,2));
-    gui1.add(random.set("random",0.2, 0., 1.));
+    gui1.add(random.set("random",0.2, 0.0, 1.0));
     
-    gui2.setup();
+    gui2.setup("player 1");
     gui2.setPosition(220,10);
     gui2.add(fade1.set("fade",255, 0, 255));
+    gui2.add(tamano1.set("radio",0.3, 0.0, 3.0));
     
     
-    gui3.setup();
+    gui3.setup("player 2");
     gui3.setPosition(440,10);
     gui3.add(fade2.set("fade",255, 0, 255));
+    gui3.add(tamano2.set("radio",0.4, 0.0, 3.0));
     
-    gui4.setup();
+    gui4.setup("player 3");
     gui4.setPosition(660,10);
     gui4.add(fade3.set("fade",255, 0, 255));
+    gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));
     
     
     
@@ -162,7 +165,7 @@ void ofApp::update(){
 void ofApp::draw_fb_player_1(){
  
     for(auto &particle : micelio_player_1) {
-        particle->setRadius(0.3);
+        particle->setRadius(tamano1);
         particle->draw();
     }
 }
@@ -170,7 +173,7 @@ void ofApp::draw_fb_player_1(){
 void ofApp::draw_fb_player_2(){
  
     for(auto &particle : micelio_player_2) {
-        particle->setRadius(1);
+        particle->setRadius(tamano2);
         particle->draw();
     }
 }
@@ -178,7 +181,7 @@ void ofApp::draw_fb_player_2(){
 void ofApp::draw_fb_player_3(){
  
     for(auto &particle : micelio_player_3) {
-        particle->setRadius(2);
+        particle->setRadius(tamano3);
         particle->draw();
     }
 }

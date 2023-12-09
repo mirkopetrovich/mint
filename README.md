@@ -6,10 +6,16 @@ TODO:
 
 -puntos de atracción para players (distintos box2d ?)
 
--zonas horizonte detecciòn colisiones
+-zonas horizonte detección colisiones
 
--feedback visual nùmero de colisiones, hifas, players kinect
+-feedback visual número de colisiones, hifas, players kinect
 
--curosres colores players
+-cursores colores players
 
 -animaciones esporocarpos (escala?)
+
+-ofxgui (colores players, vectores, button clear, toggle modos(capas horizonte))
+
+-mitosis
+
+

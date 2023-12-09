@@ -73,6 +73,8 @@ class ofApp : public ofBaseApp{
 
     ofParameter<float> random, blur, gravedadX, gravedadY;
     ofParameter<int> fade1,fade2,fade3;
+    ofParameter<float> tamano1,tamano2,tamano3;
+    
     
     float gravX, gravY;
     
