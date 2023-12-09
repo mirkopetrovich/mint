@@ -8,93 +8,88 @@ void ofApp::setup(){
     ofSetFrameRate(60);
     ofSetBackgroundAuto(true);
     ofSetVerticalSync(true);
-    ofEnableAlphaBlending();
     ofBackground(0);
     
     ofDisableArbTex(); //Use GL_TEXTURE_2D textures.
-    /// GL_TEXTURE_RECTANGLE textures are more intuitive since they allow pixel
-    /// based coordinates and are enabled by default.
-    ///
-    /// GL_TEXTURE_2D textures use normalised texture coordinates (a float value
-    /// between 0 and 1 is used to express texture coordinates along width and
-    /// height).
-    ///
-    /// GL_TEXTURE_2D textures are more widely supported and allow advanced features
-    /// such as mipmaps and texture compression.
-    
+
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
     fondo.load("fondo.jpg");
 
-    
-    
     // --------------  box2d settings  ----------------------
     box2d.init();
-    box2d.setGravity(0,-1.4);
+    box2d.setGravity(0.0,-1.4);
     //box2d.createGround(0,50, 1920,50);
     //box2d.createBounds(0,0, 1921,513);
     //box2d.checkBounds(true);
     //box2d.setFPS(60.0);
     box2d.registerGrabbing();
     // -------------------------------------------------------
+    gravX = 0.0;
+    gravY = -1.4;
     
-    
-    
-    //  -------------- framebuffer settings -----------------------
-    fb_player_1.allocate(1920,512,GL_RGBA);
-    fb_player_1.begin();
-    ofClear(0,0,0,0);
-    fb_player_1.end();
-    
-    fb_player_2.allocate(1920,512,GL_RGBA);
-    fb_player_2.begin();
-    ofClear(0,0,0,0);
-    fb_player_2.end();
-    
-    fb_player_3.allocate(1920,512,GL_RGBA);
-    fb_player_3.begin();
-    ofClear(0,0,0,0);
-    fb_player_3.end();
-    
-    fb_mix.allocate(1920,512,GL_RGBA);
-    fb_mix.begin();
-    ofClear(0,0,0,0);
-    fb_mix.end();
-    
-    
-    fb_blur_X.allocate(1920,512,GL_RGBA);
-    fb_blur_X.begin();
-    ofClear(0,0,0,0);
-    fb_blur_X.end();
-    
-    fb_blur_Y.allocate(1920,512,GL_RGBA);
-    fb_blur_Y.begin();
-    ofClear(0,0,0,0);
-    fb_blur_Y.end();
-    // ---------------------------------------------------------------
-    
-   
     // ------------------ gui settings -------------------------------
-    gui.setup();
-    gui.add(fade1.set("fade1",255, 0, 255));
-    gui.add(fade2.set("fade2",255, 0, 255));
-    gui.add(random.set("random",0.2, 0., 1.));
+    gui1.setup();
+    gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
+    gui1.add(gravedadY.set("gravedad Y",-1.4,-2.0,2.0));
+    gui1.add(blur.set("blur",1.5,0,2));
+    gui1.add(random.set("random",0.2, 0., 1.));
+    
+    gui2.setup();
+    gui2.setPosition(220,10);
+    gui2.add(fade1.set("fade",255, 0, 255));
+    
+    
+    gui3.setup();
+    gui3.setPosition(440,10);
+    gui3.add(fade2.set("fade",255, 0, 255));
+    
+    gui4.setup();
+    gui4.setPosition(660,10);
+    gui4.add(fade3.set("fade",255, 0, 255));
+    
+    
+    
     // ----------------------------------------------------------------
     
+    allocate_fb(); // framebuffer settings
     
+    // load the lines we saved...
+   ifstream f;
+    f.open(ofToDataPath("lines.txt").c_str());
+    vector <string> strLines;
+    while (!f.eof()) {
+        string ptStr;
+        getline(f, ptStr);
+        strLines.push_back(ptStr);
+    }
+    f.close();
     
-    
-    //settings temporales
-   // ofSetCircleResolution(50);
-  //  pos.set(860,206);
+    for (int i=0; i<strLines.size(); i++) {
+        vector <string> pts = ofSplitString(strLines[i], ",");
+        if(pts.size() > 0) {
+            auto edge = make_shared<ofxBox2dEdge>();
+            for (int j=0; j<pts.size(); j+=2) {
+                if(pts[j].size() > 0) {
+                    float x = ofToFloat(pts[j]);
+                    float y = ofToFloat(pts[j+1]);
+                    edge->addVertex(x, y-688);
+                }
+            }
+            edge->create(box2d.getWorld());
+            edges.push_back(edge);
+        }
+    }
 
-    
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    
+    if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
+    gravX=gravedadX;
+    if (gravY!=gravedadY) box2d.setGravity(gravX,gravedadY);
+    gravY=gravedadY;
     int hifas_player_1 = micelio_player_1.size();
     int hifas_player_2 = micelio_player_2.size();
     int hifas_player_3 = micelio_player_3.size();
@@ -108,7 +103,7 @@ void ofApp::update(){
         bump.normalize();
         micelio_player_1[i]->setVelocity(bump.x,bump.y);
         if (micelio_player_1.size()<80) { //reemplazar por hifas_player_1 ?????
-            if (ofRandom(0,1)<0.001) {
+            if (ofRandom(0,1)<0.005) {
                 auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player_1[i]->getPosition().x,micelio_player_1[i]->getPosition().y);
                 //micelio_player_1[i]->addAttractionPoint(0,1200,100);
                 micelio_player_1.push_back(nueva);
@@ -154,6 +149,10 @@ void ofApp::update(){
     draw_fb_player_2();
     fb_player_2.end();
     
+    fb_player_3.begin();
+    draw_fb_player_3();
+    fb_player_3.end();
+    
    
    
 
@@ -176,68 +175,166 @@ void ofApp::draw_fb_player_2(){
     }
 }
 
+void ofApp::draw_fb_player_3(){
+ 
+    for(auto &particle : micelio_player_3) {
+        particle->setRadius(2);
+        particle->draw();
+    }
+}
 
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     
-    float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 2, true);
+    //float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 2, true);
+    
+   // float blur = 1.5;
     
     ofSetColor(255);
     fondo.draw(0,0,1920,1200);
-
-
+    ofSetColor(230,200,0);
     
-    /*ofSetColor(255,255,255,fade1);
-    fb_player_1.draw(0,688);
-    ofSetColor(255,255,255,fade2);
-    fb_player_2.draw(0,688);
-    ofSetColor(255,255,255,255);
-    ofNoFill();
-    ofDrawCircle(mouseX,mouseY,10);*/
+    for (auto &line : lines) {
+        
+        line.draw();
+   }
+   // for (auto & edge : edges) {
+   //     edge->draw();
+   //}
 
 
-  
-
-    fb_mix.begin();
-    fb_player_1.draw(0,0);
-    fb_player_2.draw(0,0);
-    fb_mix.end();
- 
     //BLUR
     
-    fb_blur_X.begin();
-    ofEnableAlphaBlending();
+    fb_blur_X1.begin();
     ofSetColor(255);
     shaderX.begin();
-    shaderX.setUniformTexture("tex0", fb_mix.getTexture(),1);
-    shaderX.setUniformTexture("tex1", fb_mix.getTexture(),1);
+    shaderX.setUniformTexture("tex0", fb_player_1.getTexture(),1);
     shaderX.setUniform1f("blurAmnt", blur);
     shaderX.setUniform1f("texwidth", 1920);
-    fb_mix.draw(0,0);
+    fb_player_1.draw(0,0);
     shaderX.end();
-    fb_blur_X.end();
+    fb_blur_X1.end();
     
-    fb_blur_Y.begin();
-    ofEnableAlphaBlending();
+    fb_blur_Y1.begin();
     ofSetColor(255);
     shaderY.begin();
-    shaderY.setUniformTexture("tex0", fb_blur_X.getTexture(),1);
+    shaderY.setUniformTexture("tex0", fb_blur_X1.getTexture(),1);
     shaderY.setUniform1f("blurAmnt", blur);
     shaderY.setUniform1f("texheight", 1512);
-    fb_blur_Y.draw(0,0);
+    fb_blur_Y1.draw(0,0);
     shaderY.end();
-    fb_blur_Y.end();
+    fb_blur_Y1.end();
+   
+    fb_blur_X2.begin();
+    ofSetColor(255);
+    shaderX.begin();
+    shaderX.setUniformTexture("tex0", fb_player_2.getTexture(),1);
+    shaderX.setUniform1f("blurAmnt", blur);
+    shaderX.setUniform1f("texwidth", 1920);
+    fb_player_2.draw(0,0);
+    shaderX.end();
+    fb_blur_X2.end();
+    
+    fb_blur_Y2.begin();
+    ofSetColor(255);
+    shaderY.begin();
+    shaderY.setUniformTexture("tex0", fb_blur_X2.getTexture(),1);
+    shaderY.setUniform1f("blurAmnt", blur);
+    shaderY.setUniform1f("texheight", 1512);
+    fb_blur_Y2.draw(0,0);
+    shaderY.end();
+    fb_blur_Y2.end();
+    
+    fb_blur_X3.begin();
+    ofSetColor(255);
+    shaderX.begin();
+    shaderX.setUniformTexture("tex0", fb_player_3.getTexture(),1);
+    shaderX.setUniform1f("blurAmnt", blur);
+    shaderX.setUniform1f("texwidth", 1920);
+    fb_player_3.draw(0,0);
+    shaderX.end();
+    fb_blur_X3.end();
+    
+    fb_blur_Y3.begin();
+    ofSetColor(255);
+    shaderY.begin();
+    shaderY.setUniformTexture("tex0", fb_blur_X3.getTexture(),1);
+    shaderY.setUniform1f("blurAmnt", blur);
+    shaderY.setUniform1f("texheight", 1512);
+    fb_blur_Y3.draw(0,0);
+    shaderY.end();
+    fb_blur_Y3.end();
+    
+    
+    ofSetColor(255,255,255,fade1);
+    fb_blur_Y1.draw(0,688); // 0,688
+    ofSetColor(255,255,255,fade2);
+    fb_blur_Y2.draw(0,688); // 0,688
+    ofSetColor(255,255,255,fade3);
+    fb_blur_Y3.draw(0,688); // 0,688
+    ofSetColor(255,255,255,255);
    
     
-    fb_blur_Y.draw(0,688); // 0,688
+    
+    ofDrawBitmapString("x: "+ ofToString(mouseX),1840,10);
+    ofDrawBitmapString("y: "+ ofToString(mouseY),1840,20);
+    
+    gui1.draw();
+    gui2.draw();
+    gui3.draw();
+    gui4.draw();
+}
+
+void ofApp::allocate_fb(){
     
     
-    ofDrawBitmapString("blur: " + ofToString(blur),860,20);
-    ofDrawBitmapString("y: "+ ofToString(mouseY),860,40);
+    //  -------------- framebuffer settings -----------------------
+    fb_player_1.allocate(1920,512,GL_RGBA);
+    fb_player_1.begin();
+    ofClear(0,0,0,0);
+    fb_player_1.end();
     
-    gui.draw();
+    fb_player_2.allocate(1920,512,GL_RGBA);
+    fb_player_2.begin();
+    ofClear(0,0,0,0);
+    fb_player_2.end();
     
+    fb_player_3.allocate(1920,512,GL_RGBA);
+    fb_player_3.begin();
+    ofClear(0,0,0,0);
+    fb_player_3.end();
+    
+    fb_blur_X1.allocate(1920,512,GL_RGBA);
+    fb_blur_X1.begin();
+    ofClear(0,0,0,0);
+    fb_blur_X1.end();
+    
+    fb_blur_Y1.allocate(1920,512,GL_RGBA);
+    fb_blur_Y1.begin();
+    ofClear(0,0,0,0);
+    fb_blur_Y1.end();
+    
+    fb_blur_X2.allocate(1920,512,GL_RGBA);
+    fb_blur_X2.begin();
+    ofClear(0,0,0,0);
+    fb_blur_X2.end();
+    
+    fb_blur_Y2.allocate(1920,512,GL_RGBA);
+    fb_blur_Y2.begin();
+    ofClear(0,0,0,0);
+    fb_blur_Y2.end();
+    
+    fb_blur_X3.allocate(1920,512,GL_RGBA);
+    fb_blur_X3.begin();
+    ofClear(0,0,0,0);
+    fb_blur_X3.end();
+    
+    fb_blur_Y3.allocate(1920,512,GL_RGBA);
+    fb_blur_Y3.begin();
+    ofClear(0,0,0,0);
+    fb_blur_Y3.end();
+    // ---------------------------------------------------------------
 }
 
 //--------------------------------------------------------------
@@ -273,6 +370,25 @@ void ofApp::keyPressed(int key){
             micelio_player_3.push_back(particle);
         }
     }
+    
+    if(key == ' ') {
+        
+        // want to save out some line...
+        if(key == ' ') {
+            ofstream f;
+            f.clear();
+            f.open(ofToDataPath("lines.txt").c_str());
+            for (int i=0; i<lines.size(); i++) {
+                for (int j=0; j<lines[i].size(); j++) {
+                    float x = lines[i][j].x;
+                    float y = lines[i][j].y;
+                    f << x << "," << y << ",";
+                }
+                f << "\n";
+            }
+            f.close();lines.clear();
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -287,16 +403,46 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
+    
+    lines.back().addVertex(x, y);
 
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+    
+    lines.push_back(ofPolyline());
+    lines.back().addVertex(x, y);
 
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+    
+    auto edge = make_shared<ofxBox2dEdge>();
+    
+    lines.back().simplify();
+    
+    for (int i=0; i<lines.back().size(); i++) {
+        edge->addVertex(lines.back()[i]+ofPoint(0,-688));
+    }
+    
+    //edge->setPhysics(1, .2, 1);  // uncomment this to see it fall!
+    edge->create(box2d.getWorld());
+    edges.push_back(edge);
+    
+    
+    
+    
+    /* drawing.setClosed(false);
+    drawing.simplify();
+    
+    edgeLine.addVertexes(drawing);
+    //polyLine.simplifyToMaxVerts(); // this is based on the max box2d verts
+    edgeLine.setPhysics(0.0, 0.5, 0.5);
+    edgeLine.create(box2d.getWorld());
+        
+    drawing.clear();*/
 
 }
 

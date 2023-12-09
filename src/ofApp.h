@@ -51,27 +51,32 @@ class ofApp : public ofBaseApp{
     void draw_fb_player_1() ;
     void draw_fb_player_2() ;
     void draw_fb_player_3() ;
+    void allocate_fb();
     
-    ofShader shaderX;
-    ofShader shaderY;
+   
+    ofShader shaderX, shaderY;
+    
     ofImage fondo;
-    ofxBox2d box2d;  // box2d world
     
-    vector    <shared_ptr<CustomParticle>> micelio_player_1; // this is a custom particle the extends a circle
+    ofxBox2d box2d;
+    
+    vector    <shared_ptr<CustomParticle>> micelio_player_1;
     vector    <shared_ptr<CustomParticle>> micelio_player_2;
     vector    <shared_ptr<CustomParticle>> micelio_player_3;
+    vector    <shared_ptr<ofxBox2dEdge>>    edges;
+    vector    <ofPolyline>                  lines;
     
     
-    ofFbo fb_player_1;
-    ofFbo fb_player_2;
-    ofFbo fb_player_3;
-    ofFbo fb_mix;
-    ofFbo fb_blur_X;
-    ofFbo fb_blur_Y;
+    ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3;
     
-    ofxPanel gui;
-    ofParameter<float> random;
-    ofParameter<int> fade1,fade2;
+    ofxPanel gui1, gui2, gui3, gui4;
+
+    ofParameter<float> random, blur, gravedadX, gravedadY;
+    ofParameter<int> fade1,fade2,fade3;
+    
+    float gravX, gravY;
+    
+   
     
   
     
