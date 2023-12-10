@@ -306,6 +306,8 @@ void ofApp::draw(){
     polycallampa.draw();
     
     float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
+    
+    // 
     shrooms.getFrameAtPercent(percent)->draw(740, 600);
 
    
