@@ -1,2 +1,4 @@
 ofxBox2d
 ofxGui
+ofxImageSequence
+ofxSvg

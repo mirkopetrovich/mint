@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxBox2d.h"
 #include "ofxGui.h"
+#include "ofxSvg.h"
+#include "ofxImageSequence.h"
 
 // ------------------------------------------------- a simple extended box2d circle
 class CustomParticle : public ofxBox2dCircle {
@@ -75,6 +77,12 @@ class ofApp : public ofBaseApp{
     ofParameter<int> fade1,fade2,fade3;
     ofParameter<float> tamano1,tamano2,tamano3;
     
+    ofxSvg svg;
+    vector<ofPath> paths;
+    ofPolyline polycallampa;
+    int altura;
+    
+    ofxImageSequence shrooms;
     
     float gravX, gravY;
     

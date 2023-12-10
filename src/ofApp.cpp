@@ -57,6 +57,26 @@ void ofApp::setup(){
     
     allocate_fb(); // framebuffer settings
     
+    // ------------------------------------------------------------
+    
+    
+    svg.load("anim.svg");         // carga svg en objeto de tipo ofxSVG
+    for (int i=0; i<svg.getNumPath();i++) {
+        paths.push_back(svg.getPathAt(i));
+    }
+    
+    //--------------------------------------------------
+    //File format for the example frames is
+    //frame01.png
+    //this creates a method call where the parameters
+    //prefix is frame, file type is png, from frame 1 to 11, 2 digits in the number
+    shrooms.loadSequence("png/shrooms", "png", 5, 47, 2);
+    shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
+    shrooms.setFrameRate(30);
+    
+    //---------------------------------------------------
+    
+    
     // load the lines we saved...
    ifstream f;
     f.open(ofToDataPath("lines.txt").c_str());
@@ -156,7 +176,12 @@ void ofApp::update(){
     draw_fb_player_3();
     fb_player_3.end();
     
-   
+    altura = int(mouseY/768.*25);
+    if (altura<0) altura=0;
+    if (altura>25) altura=25;
+    paths[altura].translate(ofPoint(400,700,0));
+    polycallampa = paths[altura].getOutline()[0];
+    paths[altura].translate(ofPoint(-400,-700,0));
    
 
     
@@ -277,11 +302,21 @@ void ofApp::draw(){
     ofSetColor(255,255,255,fade3);
     fb_blur_Y3.draw(0,688); // 0,688
     ofSetColor(255,255,255,255);
+    
+    polycallampa.draw();
+    
+    float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
+    shrooms.getFrameAtPercent(percent)->draw(740, 600);
+
    
     
     
-    ofDrawBitmapString("x: "+ ofToString(mouseX),1840,10);
-    ofDrawBitmapString("y: "+ ofToString(mouseY),1840,20);
+    ofDrawBitmapString("x: "+ ofToString(mouseX),1740,10);
+    ofDrawBitmapString("y: "+ ofToString(mouseY),1740,20);
+    ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),1740,30);
+    ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),1740,40);
+    ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),1740,50);
+    
     
     gui1.draw();
     gui2.draw();
