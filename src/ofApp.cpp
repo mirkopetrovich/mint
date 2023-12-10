@@ -305,10 +305,14 @@ void ofApp::draw(){
     
     polycallampa.draw();
     
-    float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
+    float percent = ofMap(mouseY, 0, ofGetWidth(), 0, 1.0, true);
     
-    // 
-    shrooms.getFrameAtPercent(percent)->draw(740, 600);
+    //
+    ofVec2f punto(0,0);
+    
+    if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1920.);
+    
+    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688);
 
    
     
@@ -318,6 +322,9 @@ void ofApp::draw(){
     ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),1740,30);
     ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),1740,40);
     ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),1740,50);
+    ofDrawBitmapString("lineas: "+ ofToString(edges.size()),1740,60);
+    ofDrawBitmapString("x: "+ ofToString(punto.x),1740,70);
+    ofDrawBitmapString("y: "+ ofToString(punto.y),1740,80);
     
     
     gui1.draw();
