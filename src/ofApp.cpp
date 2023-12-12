@@ -5,7 +5,7 @@ void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_NOTICE);
     
-    ofSetFrameRate(60);
+    //ofSetFrameRate(60);
     ofSetBackgroundAuto(true);
     ofSetVerticalSync(true);
     ofBackground(0);
@@ -14,7 +14,7 @@ void ofApp::setup(){
 
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
-    fondo.load("fondo.jpg");
+    fondo.load("fondo.png");
 
     // --------------  box2d settings  ----------------------
     box2d.init();
@@ -31,8 +31,8 @@ void ofApp::setup(){
     // ------------------ gui settings -------------------------------
     gui1.setup();
     gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
-    gui1.add(gravedadY.set("gravedad Y",-1.4,-2.0,2.0));
-    gui1.add(blur.set("blur",1.5,0,2));
+    gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
+    gui1.add(blur.set("blur",1.1,0.0,2.0));
     gui1.add(random.set("random",0.2, 0.0, 1.0));
     
     gui2.setup("player 1");
@@ -71,6 +71,7 @@ void ofApp::setup(){
     //this creates a method call where the parameters
     //prefix is frame, file type is png, from frame 1 to 11, 2 digits in the number
     shrooms.loadSequence("png/shrooms", "png", 5, 47, 2);
+    shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
     shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
     shrooms.setFrameRate(30);
     
@@ -125,14 +126,28 @@ void ofApp::update(){
         bump += micelio_player_1[i]->getVelocity();
         bump.normalize();
         micelio_player_1[i]->setVelocity(bump.x,bump.y);
-        if (micelio_player_1.size()<80) { //reemplazar por hifas_player_1 ?????
-            if (ofRandom(0,1)<0.005) {
+        if (micelio_player_1.size()<1) { //reemplazar por hifas_player_1 ?????
+            if (ofRandom(0,1)<0.001) {
                 auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player_1[i]->getPosition().x,micelio_player_1[i]->getPosition().y);
-                //micelio_player_1[i]->addAttractionPoint(0,1200,100);
+                //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY,2);
                 micelio_player_1.push_back(nueva);
             }
         }
     }
+    
+    ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
+    float minDis = ofGetMousePressed() ? 300 : 200;
+    
+        for(auto &circle : micelio_player_1) {
+        float dis = mouse.distance(circle->getPosition());
+        
+       
+            circle->addAttractionPoint(mouse.x,mouse.y, 0.003);
+            
+    }
+    
+    
+    
     
    for (int i=0;i<hifas_player_2;i++) {
         
@@ -188,7 +203,7 @@ void ofApp::update(){
 }
 
 void ofApp::draw_fb_player_1(){
- 
+    
     for(auto &particle : micelio_player_1) {
         particle->setRadius(tamano1);
         particle->draw();
@@ -296,7 +311,7 @@ void ofApp::draw(){
     
     
     ofSetColor(255,255,255,fade1);
-    fb_blur_Y1.draw(0,688); // 0,688
+    fb_blur_Y1.draw(0,0); // 0,688
     ofSetColor(255,255,255,fade2);
     fb_blur_Y2.draw(0,688); // 0,688
     ofSetColor(255,255,255,fade3);
@@ -305,14 +320,14 @@ void ofApp::draw(){
     
     polycallampa.draw();
     
-    float percent = ofMap(mouseY, 0, ofGetWidth(), 0, 1.0, true);
+    float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
     
     //
     ofVec2f punto(0,0);
     
-    if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1920.);
+    if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
     
-    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688);
+    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);
 
    
     
@@ -323,8 +338,8 @@ void ofApp::draw(){
     ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),1740,40);
     ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),1740,50);
     ofDrawBitmapString("lineas: "+ ofToString(edges.size()),1740,60);
-    ofDrawBitmapString("x: "+ ofToString(punto.x),1740,70);
-    ofDrawBitmapString("y: "+ ofToString(punto.y),1740,80);
+  //  ofDrawBitmapString("x: "+ ofToString(punto.x),1740,70);
+  //  ofDrawBitmapString("y: "+ ofToString(punto.y),1740,80);
     
     
     gui1.draw();
@@ -392,10 +407,16 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
+    
+    if(key == 'a') {
+        vsync=!vsync;
+        ofSetVerticalSync(vsync);
+    }
+        
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<4;i++) {
-            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688); //
+        for (int i=0;i<40;i++) {
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY); //
             //particle->addAttractionPoint(0,0,10);
             micelio_player_1.push_back(particle);
             
@@ -471,7 +492,7 @@ void ofApp::mouseReleased(int x, int y, int button){
     lines.back().simplify();
     
     for (int i=0; i<lines.back().size(); i++) {
-        edge->addVertex(lines.back()[i]+ofPoint(0,-688));
+        edge->addVertex(lines.back()[i]+ofPoint(0,-688)); //0,-688
     }
     
     //edge->setPhysics(1, .2, 1);  // uncomment this to see it fall!
