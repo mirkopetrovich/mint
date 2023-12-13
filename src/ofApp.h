@@ -5,6 +5,10 @@
 #include "ofxGui.h"
 #include "ofxSvg.h"
 #include "ofxImageSequence.h"
+#include "ofxKinect.h"
+#include "ofxOpenCv.h"
+#include "ofxCv.h"
+
 
 // ------------------------------------------------- a simple extended box2d circle
 class CustomParticle : public ofxBox2dCircle {
@@ -76,6 +80,7 @@ class ofApp : public ofBaseApp{
     ofParameter<float> random, blur, gravedadX, gravedadY;
     ofParameter<int> fade1,fade2,fade3;
     ofParameter<float> tamano1,tamano2,tamano3;
+    ofParameter<int> minimo,maximo;
     
     ofxSvg svg;
     vector<ofPath> paths;
@@ -88,6 +93,23 @@ class ofApp : public ofBaseApp{
     
    
     bool vsync;
+    
+    ofxKinect kinect;
+    
+    
+    ofxCvGrayscaleImage mirror;
+    
+    ofxCvGrayscaleImage grayImage; // grayscale depth image
+    ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
+    ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
+    
+    ofxCvGrayscaleImage grayImage2; // grayscale depth image
+    ofxCvGrayscaleImage grayThreshNear2; // the near thresholded image
+    ofxCvGrayscaleImage grayThreshFar2; // the far thresholded image
+    
+    ofxCv::ContourFinder contourFinder;
+
+    
   
     
 };

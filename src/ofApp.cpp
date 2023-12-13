@@ -3,7 +3,31 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    ofSetLogLevel(OF_LOG_NOTICE);
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    /// - `OF_LOG_VERBOSE` (lowest level)
+    /// - `OF_LOG_NOTICE`
+    /// - `OF_LOG_WARNING`
+    /// - `OF_LOG_ERROR`
+    /// - `OF_LOG_FATAL_ERROR`
+    /// - `OF_LOG_SILENT` (highest level)
+    
+    
+    // ------------Kinect settings ----------------------------
+    
+    kinect.setRegistration(true);
+    kinect.init();
+    //kinect.init(true); // shows infrared instead of RGB video image
+    //kinect.init(false, false); // disable video image (faster fps)
+    kinect.open();
+    
+    if (kinect.isConnected()) {
+        ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
+    }
+    
+    kinect.setCameraTiltAngle(18);
+    
+    
+    
     
     //ofSetFrameRate(60);
     ofSetBackgroundAuto(true);
@@ -18,7 +42,7 @@ void ofApp::setup(){
 
     // --------------  box2d settings  ----------------------
     box2d.init();
-    box2d.setGravity(0.0,-1.4);
+    box2d.setGravity(0.0,0);
     //box2d.createGround(0,50, 1920,50);
     //box2d.createBounds(0,0, 1921,513);
     //box2d.checkBounds(true);
@@ -34,6 +58,8 @@ void ofApp::setup(){
     gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
     gui1.add(blur.set("blur",1.1,0.0,2.0));
     gui1.add(random.set("random",0.2, 0.0, 1.0));
+    gui1.add(minimo.set("min",45, 0, 255));
+    gui1.add(maximo.set("max",180, 0, 255));
     
     gui2.setup("player 1");
     gui2.setPosition(220,10);
@@ -109,6 +135,45 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    kinect.update();
+    
+    if (kinect.isFrameNew()) {
+        
+        mirror.setFromPixels(kinect.getDepthPixels());
+        mirror.mirror(0,1);
+        grayImage = mirror;
+        grayImage2 = mirror;
+        grayThreshNear = grayImage;
+        grayThreshFar = grayImage;
+        grayThreshNear.threshold(220, true);
+        grayThreshFar.threshold(80);
+        cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
+        
+        grayThreshNear2 = grayImage2;
+        grayThreshFar2 = grayImage2;
+        grayThreshNear2.threshold(100, true);
+        grayThreshFar2.threshold(40);
+        cvAnd(grayThreshNear2.getCvImage(), grayThreshFar2.getCvImage(), grayImage2.getCvImage(), NULL);
+        
+        contourFinder.setMinAreaRadius(minimo);
+        contourFinder.setMaxAreaRadius(maximo);
+        contourFinder.setThreshold(0);
+        contourFinder.findContours(grayImage);
+        contourFinder.setFindHoles(false);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+    
     
     if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
     gravX=gravedadX;
@@ -232,6 +297,8 @@ void ofApp::draw_fb_player_3(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     
+    
+    
     //float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 2, true);
     
    // float blur = 1.5;
@@ -332,6 +399,20 @@ void ofApp::draw(){
     shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);
 
    
+    kinect.draw(875,10,160,120);
+    kinect.drawDepth(1040,10,160,120);
+    grayImage.draw(1205,10,160,120);
+    grayImage2.draw(1370,10,160,120);
+    
+    grayImage.draw(0,900,1920,120);
+    
+    ofSetColor(255);
+    ofScale(2.);
+    ofTranslate(200,0);
+    contourFinder.draw();
+    ofTranslate(-200,0);
+    ofScale(0.5);
+    //ofSetColor(255);
     
     
     ofDrawBitmapString("x: "+ ofToString(mouseX),1740,10);
@@ -340,8 +421,8 @@ void ofApp::draw(){
     ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),1740,40);
     ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),1740,50);
     ofDrawBitmapString("lineas: "+ ofToString(edges.size()),1740,60);
-  //  ofDrawBitmapString("x: "+ ofToString(punto.x),1740,70);
-  //  ofDrawBitmapString("y: "+ ofToString(punto.y),1740,80);
+    ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),1740,70);
+    ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),1740,80);
     
     
     gui1.draw();
