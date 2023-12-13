@@ -126,7 +126,9 @@ void ofApp::update(){
         bump += micelio_player_1[i]->getVelocity();
         bump.normalize();
         micelio_player_1[i]->setVelocity(bump.x,bump.y);
-        if (micelio_player_1.size()<1) { //reemplazar por hifas_player_1 ?????
+        
+        micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
+        if (micelio_player_1.size()<100) { //reemplazar por hifas_player_1 ?????
             if (ofRandom(0,1)<0.001) {
                 auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player_1[i]->getPosition().x,micelio_player_1[i]->getPosition().y);
                 //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY,2);
@@ -135,16 +137,16 @@ void ofApp::update(){
         }
     }
     
-    ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
+   /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
     float minDis = ofGetMousePressed() ? 300 : 200;
     
         for(auto &circle : micelio_player_1) {
         float dis = mouse.distance(circle->getPosition());
         
        
-            circle->addAttractionPoint(mouse.x,mouse.y, 0.003);
+            circle->addAttractionPoint(mouse.x,mouse.y, 0.0006);
             
-    }
+    }*/
     
     
     
@@ -233,7 +235,7 @@ void ofApp::draw(){
     //float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 2, true);
     
    // float blur = 1.5;
-    
+    ofBackground(0);
     ofSetColor(255);
     fondo.draw(0,0,1920,1200);
     ofSetColor(230,200,0);
@@ -415,7 +417,7 @@ void ofApp::keyPressed(int key){
         
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<40;i++) {
+        for (int i=0;i<5;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY); //
             //particle->addAttractionPoint(0,0,10);
             micelio_player_1.push_back(particle);
