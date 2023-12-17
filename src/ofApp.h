@@ -62,7 +62,7 @@ class ofApp : public ofBaseApp{
    
     ofShader shaderX, shaderY;
     
-    ofImage fondo;
+    ofImage fondo_1, fondo_2;
     
     ofxBox2d box2d;
     
@@ -86,7 +86,7 @@ class ofApp : public ofBaseApp{
     vector<ofPath> paths;
     ofPolyline polycallampa;
     int altura;
-    
+    int modo;
     ofxImageSequence shrooms;
     
     float gravX, gravY;

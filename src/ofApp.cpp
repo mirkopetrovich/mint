@@ -4,6 +4,7 @@
 void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_VERBOSE);
+    ofEnableAntiAliasing();
   
     // ------------Kinect settings ----------------------------
     
@@ -29,7 +30,11 @@ void ofApp::setup(){
 
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
-    fondo.load("fondo.png");
+    
+    fondo_1.load("fondo.png");
+    fondo_2.load("fondo-y-cortinarius.png");
+  
+    modo = 0;
 
     // --------------  box2d settings  ----------------------
     box2d.init();
@@ -86,7 +91,7 @@ void ofApp::setup(){
     //frame01.png
     //this creates a method call where the parameters
     //prefix is frame, file type is png, from frame 1 to 11, 2 digits in the number
-    shrooms.loadSequence("png/shrooms", "png", 5, 47, 2);
+    //shrooms.loadSequence("png/shrooms", "png", 5, 47, 2);
     shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
     shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
     shrooms.setFrameRate(30);
@@ -298,7 +303,11 @@ void ofApp::draw(){
    // float blur = 1.5;
     ofBackground(0);
     ofSetColor(255);
-    fondo.draw(0,0,1920,1200);
+    
+    if (modo==1) fondo_1.draw(0,0,1920,1200);
+    if (modo==2) fondo_2.draw(0,0,1920,1200);
+    
+    ;
     ofSetColor(230,200,0);
     
     for (auto &line : lines) {
@@ -417,6 +426,7 @@ void ofApp::draw(){
     ofDrawBitmapString("lineas: "+ ofToString(edges.size()),1740,60);
     ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),1740,70);
     ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),1740,80);
+    ofDrawBitmapString("key "+ ofToString(modo),1740,90);
     
     
     gui1.draw();
@@ -484,6 +494,13 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
+   
+    
+    if (key>47 && key<58) modo=key-48;
+  
+            
+             
+                 
     
     if(key == 'a') {
         vsync=!vsync;
