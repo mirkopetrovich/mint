@@ -4,16 +4,10 @@
 void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_VERBOSE);
-    /// - `OF_LOG_VERBOSE` (lowest level)
-    /// - `OF_LOG_NOTICE`
-    /// - `OF_LOG_WARNING`
-    /// - `OF_LOG_ERROR`
-    /// - `OF_LOG_FATAL_ERROR`
-    /// - `OF_LOG_SILENT` (highest level)
-    
-    
+  
     // ------------Kinect settings ----------------------------
     
+    /*
     kinect.setRegistration(true);
     kinect.init();
     //kinect.init(true); // shows infrared instead of RGB video image
@@ -24,10 +18,7 @@ void ofApp::setup(){
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
     }
     
-    kinect.setCameraTiltAngle(18);
-    
-    
-    
+    kinect.setCameraTiltAngle(18);*/ //KINECT SETTINGS
     
     //ofSetFrameRate(60);
     ofSetBackgroundAuto(true);
@@ -53,31 +44,30 @@ void ofApp::setup(){
     gravY = -1.4;
     
     // ------------------ gui settings -------------------------------
-    gui1.setup();
-    gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
-    gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
-    gui1.add(blur.set("blur",1.1,0.0,2.0));
-    gui1.add(random.set("random",0.2, 0.0, 1.0));
-    gui1.add(minimo.set("min",45, 0, 255));
-    gui1.add(maximo.set("max",180, 0, 255));
-    
-    gui2.setup("player 1");
-    gui2.setPosition(220,10);
-    gui2.add(fade1.set("fade",255, 0, 255));
-    gui2.add(tamano1.set("radio",0.3, 0.0, 3.0));
-    
-    
-    gui3.setup("player 2");
-    gui3.setPosition(440,10);
-    gui3.add(fade2.set("fade",255, 0, 255));
-    gui3.add(tamano2.set("radio",0.4, 0.0, 3.0));
-    
-    gui4.setup("player 3");
-    gui4.setPosition(660,10);
-    gui4.add(fade3.set("fade",255, 0, 255));
-    gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));
-    
-    
+   
+    {gui1.setup();
+        gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
+        gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
+        gui1.add(blur.set("blur",1.1,0.0,2.0));
+        gui1.add(random.set("random",0.2, 0.0, 1.0));
+        gui1.add(minimo.set("min",45, 0, 255));
+        gui1.add(maximo.set("max",180, 0, 255));
+        
+        gui2.setup("player 1");
+        gui2.setPosition(220,10);
+        gui2.add(fade1.set("fade",255, 0, 255));
+        gui2.add(tamano1.set("radio",0.3, 0.0, 3.0));
+        
+        
+        gui3.setup("player 2");
+        gui3.setPosition(440,10);
+        gui3.add(fade2.set("fade",255, 0, 255));
+        gui3.add(tamano2.set("radio",0.4, 0.0, 3.0));
+        
+        gui4.setup("player 3");
+        gui4.setPosition(660,10);
+        gui4.add(fade3.set("fade",255, 0, 255));
+        gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));} // GUI SETTINGS
     
     // ----------------------------------------------------------------
     
@@ -103,40 +93,40 @@ void ofApp::setup(){
     
     //---------------------------------------------------
     
-    
-    // load the lines we saved...
-   ifstream f;
-    f.open(ofToDataPath("lines.txt").c_str());
-    vector <string> strLines;
-    while (!f.eof()) {
-        string ptStr;
-        getline(f, ptStr);
-        strLines.push_back(ptStr);
-    }
-    f.close();
-    
-    for (int i=0; i<strLines.size(); i++) {
-        vector <string> pts = ofSplitString(strLines[i], ",");
-        if(pts.size() > 0) {
-            auto edge = make_shared<ofxBox2dEdge>();
-            for (int j=0; j<pts.size(); j+=2) {
-                if(pts[j].size() > 0) {
-                    float x = ofToFloat(pts[j]);
-                    float y = ofToFloat(pts[j+1]);
-                    edge->addVertex(x, y-688);
-                }
-            }
-            edge->create(box2d.getWorld());
-            edges.push_back(edge);
+    {
+        // load the lines we saved...
+        ifstream f;
+        f.open(ofToDataPath("lines.txt").c_str());
+        vector <string> strLines;
+        while (!f.eof()) {
+            string ptStr;
+            getline(f, ptStr);
+            strLines.push_back(ptStr);
         }
-    }
-
+        f.close();
+        
+        for (int i=0; i<strLines.size(); i++) {
+            vector <string> pts = ofSplitString(strLines[i], ",");
+            if(pts.size() > 0) {
+                auto edge = make_shared<ofxBox2dEdge>();
+                for (int j=0; j<pts.size(); j+=2) {
+                    if(pts[j].size() > 0) {
+                        float x = ofToFloat(pts[j]);
+                        float y = ofToFloat(pts[j+1]);
+                        edge->addVertex(x, y-688);
+                    }
+                }
+                edge->create(box2d.getWorld());
+                edges.push_back(edge);
+            }
+        }
+    }  // LOAD LINES
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    kinect.update();
+  /*  kinect.update();
     
     if (kinect.isFrameNew()) {
         
@@ -162,45 +152,48 @@ void ofApp::update(){
         contourFinder.findContours(grayImage);
         contourFinder.setFindHoles(false);
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    }
+    }*/ // KINECT
     
     
     if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
     gravX=gravedadX;
     if (gravY!=gravedadY) box2d.setGravity(gravX,gravedadY);
     gravY=gravedadY;
+    
+    
+    
+    
     int hifas_player_1 = micelio_player_1.size();
     int hifas_player_2 = micelio_player_2.size();
     int hifas_player_3 = micelio_player_3.size();
+    
+    
   
     for (int i=0;i<hifas_player_1;i++) {
         
-        ofVec2f bump;
-        bump.set(ofRandom(-1,1),ofRandom(-1,1));
-        bump *= random;
-        bump += micelio_player_1[i]->getVelocity();
-        bump.normalize();
-        micelio_player_1[i]->setVelocity(bump.x,bump.y);
+        ofVec2f bump;                                       // creamos vector 2f para bump
+        bump.set(ofRandom(-1,1),ofRandom(-1,1));            // vector random
+        bump *= random;                                     // multiplicamos for factor random
+        bump += micelio_player_1[i]->getVelocity();         // sumamos velocidad de hifa[i]
+        bump.normalize();                                   // normaliza
+        micelio_player_1[i]->setVelocity(bump.x,bump.y);    // asignamos a velocidad de hifa[i]
         
-        micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
-        if (micelio_player_1.size()<100) { //reemplazar por hifas_player_1 ?????
+        //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
+      
+        if (hifas_player_1<1000) {
             if (ofRandom(0,1)<0.001) {
                 auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player_1[i]->getPosition().x,micelio_player_1[i]->getPosition().y);
-                //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY,2);
-                micelio_player_1.push_back(nueva);
+                nueva->setRadius(nueva->getRadius()*0.3);
+                                 micelio_player_1.push_back(nueva);
             }
         }
     }
+    
+    
+    
+    
+    
+    
     
    /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
     float minDis = ofGetMousePressed() ? 300 : 200;
@@ -272,7 +265,8 @@ void ofApp::update(){
 void ofApp::draw_fb_player_1(){
     
     for(auto &particle : micelio_player_1) {
-        particle->setRadius(tamano1);
+        //particle->setRadius(tamano1);
+       // ofSetColor(255,255,255,particle->getRadius()*255);
         particle->draw();
     }
 }
@@ -380,14 +374,14 @@ void ofApp::draw(){
     
     
     ofSetColor(255,255,255,fade1);
-    fb_blur_Y1.draw(0,0); // 0,688
+    fb_blur_Y1.draw(0,688); // 0,688
     ofSetColor(255,255,255,fade2);
     fb_blur_Y2.draw(0,688); // 0,688
     ofSetColor(255,255,255,fade3);
     fb_blur_Y3.draw(0,688); // 0,688
     ofSetColor(255,255,255,255);
     
-    polycallampa.draw();
+   /* polycallampa.draw();
     
     float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
     
@@ -396,10 +390,10 @@ void ofApp::draw(){
     
     if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
     
-    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);
+    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);*/
 
    
-    kinect.draw(875,10,160,120);
+  /*  kinect.draw(875,10,160,120);
     kinect.drawDepth(1040,10,160,120);
     grayImage.draw(1205,10,160,120);
     grayImage2.draw(1370,10,160,120);
@@ -412,7 +406,7 @@ void ofApp::draw(){
     contourFinder.draw();
     ofTranslate(-200,0);
     ofScale(0.5);
-    //ofSetColor(255);
+    //ofSetColor(255);*/ //KINECT DRAW
     
     
     ofDrawBitmapString("x: "+ ofToString(mouseX),1740,10);
@@ -498,9 +492,10 @@ void ofApp::keyPressed(int key){
         
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<5;i++) {
-            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY); //
+        for (int i=0;i<4;i++) {
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688); //
             //particle->addAttractionPoint(0,0,10);
+            particle->setRadius(1);
             micelio_player_1.push_back(particle);
             
         }
