@@ -9,6 +9,9 @@
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 
+#define KINECT
+//#define DEBUG
+
 
 // ------------------------------------------------- a simple extended box2d circle
 class CustomParticle : public ofxBox2dCircle {
@@ -94,20 +97,17 @@ class ofApp : public ofBaseApp{
    
     bool vsync;
     
+#ifdef KINECT
     ofxKinect kinect;
-    
-    
     ofxCvGrayscaleImage mirror;
-    
-    ofxCvGrayscaleImage grayImage; // grayscale depth image
-    ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
-    ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
-    
-    ofxCvGrayscaleImage grayImage2; // grayscale depth image
-    ofxCvGrayscaleImage grayThreshNear2; // the near thresholded image
-    ofxCvGrayscaleImage grayThreshFar2; // the far thresholded image
-    
+    ofxCvGrayscaleImage grayImage;        // grayscale depth image
+    ofxCvGrayscaleImage grayThreshNear;   // the near thresholded image
+    ofxCvGrayscaleImage grayThreshFar;    // the far thresholded image
+    ofxCvGrayscaleImage grayImage2;       // grayscale depth image
+    ofxCvGrayscaleImage grayThreshNear2;  // the near thresholded image
+    ofxCvGrayscaleImage grayThreshFar2;   // the far thresholded image
     ofxCv::ContourFinder contourFinder;
+#endif
 
     
   

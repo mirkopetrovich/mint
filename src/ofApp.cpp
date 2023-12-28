@@ -2,40 +2,33 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofEnableAntiAliasing();
-  
-    // ------------Kinect settings ----------------------------
-    
-    /*
+
+#ifdef KINECT
     kinect.setRegistration(true);
     kinect.init();
     //kinect.init(true); // shows infrared instead of RGB video image
     //kinect.init(false, false); // disable video image (faster fps)
     kinect.open();
-    
+#ifdef DEBUG
     if (kinect.isConnected()) {
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
     }
+#endif
+    kinect.setCameraTiltAngle(25);
+#endif
     
-    kinect.setCameraTiltAngle(18);*/ //KINECT SETTINGS
-    
-    //ofSetFrameRate(60);
     ofSetBackgroundAuto(true);
     ofSetVerticalSync(true);
     ofBackground(0);
-    
     ofDisableArbTex(); //Use GL_TEXTURE_2D textures.
-
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
-    
     fondo_1.load("fondo.png");
     fondo_2.load("fondo-y-cortinarius.png");
-  
     modo = 0;
-
+    
     // --------------  box2d settings  ----------------------
     box2d.init();
     box2d.setGravity(0.0,0);
@@ -47,9 +40,7 @@ void ofApp::setup(){
     // -------------------------------------------------------
     gravX = 0.0;
     gravY = -1.4;
-    
     // ------------------ gui settings -------------------------------
-   
     {gui1.setup();
         gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
         gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
@@ -73,31 +64,21 @@ void ofApp::setup(){
         gui4.setPosition(660,10);
         gui4.add(fade3.set("fade",255, 0, 255));
         gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));} // GUI SETTINGS
-    
     // ----------------------------------------------------------------
     
     allocate_fb(); // framebuffer settings
     
     // ------------------------------------------------------------
-    
-    
-    svg.load("anim.svg");         // carga svg en objeto de tipo ofxSVG
+   /* svg.load("anim.svg");         // carga svg en objeto de tipo ofxSVG
     for (int i=0; i<svg.getNumPath();i++) {
         paths.push_back(svg.getPathAt(i));
-    }
+    }*/
     
     //--------------------------------------------------
-    //File format for the example frames is
-    //frame01.png
-    //this creates a method call where the parameters
-    //prefix is frame, file type is png, from frame 1 to 11, 2 digits in the number
-    //shrooms.loadSequence("png/shrooms", "png", 5, 47, 2);
-    shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
+    /*shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
     shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
-    shrooms.setFrameRate(30);
-    
+    shrooms.setFrameRate(30);*/
     //---------------------------------------------------
-    
     {
         // load the lines we saved...
         ifstream f;
@@ -131,10 +112,10 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     
-  /*  kinect.update();
+#ifdef KINECT
+    kinect.update();
     
     if (kinect.isFrameNew()) {
-        
         mirror.setFromPixels(kinect.getDepthPixels());
         mirror.mirror(0,1);
         grayImage = mirror;
@@ -156,8 +137,8 @@ void ofApp::update(){
         contourFinder.setThreshold(0);
         contourFinder.findContours(grayImage);
         contourFinder.setFindHoles(false);
-        
-    }*/ // KINECT
+    }
+#endif
     
     
     if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
@@ -194,11 +175,7 @@ void ofApp::update(){
         }
     }
     
-    
-    
-    
-    
-    
+
     
    /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
     float minDis = ofGetMousePressed() ? 300 : 200;
@@ -256,12 +233,12 @@ void ofApp::update(){
     draw_fb_player_3();
     fb_player_3.end();
     
-    altura = int(mouseY/768.*25);
+    /*altura = int(mouseY/768.*25);
     if (altura<0) altura=0;
     if (altura>25) altura=25;
     paths[altura].translate(ofPoint(400,700,0));
     polycallampa = paths[altura].getOutline()[0];
-    paths[altura].translate(ofPoint(-400,-700,0));
+    paths[altura].translate(ofPoint(-400,-700,0));*/
    
 
     
@@ -295,12 +272,7 @@ void ofApp::draw_fb_player_3(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
-    
-    
-    //float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 2, true);
-    
-   // float blur = 1.5;
+  
     ofBackground(0);
     ofSetColor(255);
     
@@ -401,21 +373,19 @@ void ofApp::draw(){
     
     shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);*/
 
-   
-  /*  kinect.draw(875,10,160,120);
+#ifdef KINECT
+    kinect.draw(875,10,160,120);
     kinect.drawDepth(1040,10,160,120);
     grayImage.draw(1205,10,160,120);
     grayImage2.draw(1370,10,160,120);
-    
     grayImage.draw(0,900,1920,120);
-    
     ofSetColor(255);
     ofScale(2.);
     ofTranslate(200,0);
     contourFinder.draw();
     ofTranslate(-200,0);
     ofScale(0.5);
-    //ofSetColor(255);*/ //KINECT DRAW
+#endif
     
     
     ofDrawBitmapString("x: "+ ofToString(mouseX),1740,10);
@@ -424,8 +394,10 @@ void ofApp::draw(){
     ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),1740,40);
     ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),1740,50);
     ofDrawBitmapString("lineas: "+ ofToString(edges.size()),1740,60);
+#ifdef KINECT
     ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),1740,70);
     ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),1740,80);
+#endif
     ofDrawBitmapString("key "+ ofToString(modo),1740,90);
     
     
