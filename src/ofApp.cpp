@@ -25,8 +25,8 @@ void ofApp::setup(){
     ofDisableArbTex(); //Use GL_TEXTURE_2D textures.
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
-    fondo_1.load("fondo.png");
-    fondo_2.load("fondo-y-cortinarius.png");
+    fondo_1.load("fondo-1.jpg");
+    fondo_2.load("fondo-2.jpg");
     modo = 0;
     
     // --------------  box2d settings  ----------------------

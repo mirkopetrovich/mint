@@ -10,7 +10,7 @@
 #include "ofxCv.h"
 
 #define KINECT
-//#define DEBUG
+#define DEBUG
 
 
 // ------------------------------------------------- a simple extended box2d circle
