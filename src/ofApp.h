@@ -97,7 +97,7 @@ class ofApp : public ofBaseApp{
     float gravX, gravY;
     
    
-    bool vsync,lineas,info,gui;
+    bool vsync,lineas,info,gui,kontorno,tracker;
     
 #ifdef KINECT
     ofxKinect kinect;

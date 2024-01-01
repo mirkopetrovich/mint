@@ -17,7 +17,7 @@ void ofApp::setup(){
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
     }
 #endif
-    kinect.setCameraTiltAngle(25);
+    kinect.setCameraTiltAngle(5); //25
 #endif
     
     ofSetBackgroundAuto(true);
@@ -338,12 +338,16 @@ void ofApp::draw(){
 
 #ifdef KINECT
     
-    grayImage.draw(0,900,1920,120);
-    ofPushMatrix();
-    ofScale(2.);
-    ofTranslate(200,0);
-    contourFinder.draw();
-    ofPopMatrix();
+    
+    if (tracker) grayImage.draw(0,900,1920,300);
+    
+    if (kontorno) {
+        ofPushMatrix();
+        ofScale(2.);
+        ofTranslate(200,0);
+        contourFinder.draw();
+        ofPopMatrix();
+    }
     
     ofVec2f posk,tamk;
     if (pip!=0) {
@@ -377,18 +381,21 @@ void ofApp::draw(){
 #endif
     
     if (info) {
-        ofDrawBitmapString("x: "+ ofToString(mouseX),875,10);
-        ofDrawBitmapString("y: "+ ofToString(mouseY),875,20);
-        ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),875,30);
-        ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),875,40);
-        ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),875,50);
-        ofDrawBitmapString("lineas: "+ ofToString(edges.size()),875,60);
+        ofPushMatrix();
+        ofTranslate(10,180);
+        ofDrawBitmapString("x: "+ ofToString(mouseX),0,10);
+        ofDrawBitmapString("y: "+ ofToString(mouseY),0,20);
+        ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),0,30);
+        ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),0,40);
+        ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),0,50);
+        ofDrawBitmapString("lineas: "+ ofToString(edges.size()),0,60);
 #ifdef KINECT
-        ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),875,70);
-        ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),875,80);
+        ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),0,70);
+        ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),0,80);
 #endif
-        ofDrawBitmapString("key: "+ ofToString(modo),875,90);
-        ofDrawBitmapString("PIP: "+ ofToString(nip),875,100);
+        ofDrawBitmapString("key: "+ ofToString(modo),0,90);
+        ofDrawBitmapString("PIP: "+ ofToString(nip),0,100);
+        ofPopMatrix();
     }
     
     if (gui) {
@@ -461,6 +468,8 @@ void ofApp::keyPressed(int key){
    
     
     if (key>47 && key<58) modo=key-48;
+    if (key == 't') tracker=!tracker ;
+    if (key == 'k') kontorno=!kontorno ;
     if (key == 'g') gui=!gui ;
     if (key == 'i') info=!info ;
     if (key == 'l') lineas=!lineas ;
