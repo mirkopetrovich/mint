@@ -17,6 +17,7 @@
 class CustomParticle : public ofxBox2dCircle {
 public:
     ofColor color;
+    int alpha;
     
     CustomParticle(b2World * world, float x, float y) {
         setPhysics(1, 0, 10);
@@ -29,7 +30,7 @@ public:
         
         ofPushMatrix();
         ofTranslate(getPosition());
-       // ofSetHexColor(0xFFFFFF);
+        ofSetColor(color);
         ofNoFill();
         ofDrawCircle(0, 0, radius);
         ofPopMatrix();
@@ -85,6 +86,7 @@ class ofApp : public ofBaseApp{
     ofParameter<int> fade1,fade2,fade3;
     ofParameter<float> tamano1,tamano2,tamano3;
     ofParameter<int> minimo,maximo,altura_micelio;
+    ofParameter<int> cerca_1,lejos_1,cerca_2,lejos_2;
     
     ofxSvg svg;
     vector<ofPath> paths;
@@ -101,6 +103,7 @@ class ofApp : public ofBaseApp{
     
 #ifdef KINECT
     ofxKinect kinect;
+    ofxCvColorImage mirror_kinect;
     ofxCvGrayscaleImage mirror;
     ofxCvGrayscaleImage grayImage;        // grayscale depth image
     ofxCvGrayscaleImage grayThreshNear;   // the near thresholded image

@@ -3,8 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
-    ofEnableAntiAliasing();
-    ofEnableSmoothing();
+    //ofEnableAntiAliasing();
+    //ofEnableSmoothing();
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -52,6 +52,10 @@ void ofApp::setup(){
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
         gui1.add(altura_micelio.set("altura micelio",0, -200, 200));
+        gui1.add(cerca_1.set("umbral cerca 1",220, 50, 300));
+        gui1.add(lejos_1.set("umbral lejos 1",80, 0, 150));
+        gui1.add(cerca_2.set("umbral cerca 2",100, 50, 300));
+        gui1.add(lejos_2.set("umbral lejos 2",40, 0, 150));
         
         gui2.setup("player 1");
         gui2.setPosition(220,10);
@@ -95,19 +99,21 @@ void ofApp::update(){
     
     if (kinect.isFrameNew()) {
         mirror.setFromPixels(kinect.getDepthPixels());
+        mirror_kinect.setFromPixels(kinect.getPixels());
         mirror.mirror(0,1);
+        mirror_kinect.mirror(0,1);
         grayImage = mirror;
         grayImage2 = mirror;
         grayThreshNear = grayImage;
         grayThreshFar = grayImage;
-        grayThreshNear.threshold(220, true);
-        grayThreshFar.threshold(80);
+        grayThreshNear.threshold(cerca_1, true);
+        grayThreshFar.threshold(lejos_1);
         cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
         
         grayThreshNear2 = grayImage2;
         grayThreshFar2 = grayImage2;
-        grayThreshNear2.threshold(100, true);
-        grayThreshFar2.threshold(40);
+        grayThreshNear2.threshold(cerca_2, true);
+        grayThreshFar2.threshold(lejos_2);
         cvAnd(grayThreshNear2.getCvImage(), grayThreshFar2.getCvImage(), grayImage2.getCvImage(), NULL);
         
         contourFinder.setMinAreaRadius(minimo);
@@ -170,10 +176,13 @@ void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
         
         //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
         
-       if (size<1000) {
+       if (size<100) {
             if (ofRandom(0,1)<0.001) {
+                int alf;
                 auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
-                nueva->setRadius(nueva->getRadius()*0.3);
+                nueva->setRadius(micelio_player[i]->getRadius()*0.6);
+                alf=micelio_player[i]->color.a-30;
+                nueva->color.set(255,255,255,alf);
                 micelio_player.push_back(nueva);
             }
         }
@@ -363,10 +372,10 @@ void ofApp::draw(){
         ofTranslate(posk);
         switch(nip) {
             case 0:
-                kinect.draw(0,0,tamk.x,tamk.y);
+                mirror_kinect.draw(0,0,tamk.x,tamk.y);
                 break;
             case 1:
-                kinect.drawDepth(0,0,tamk.x,tamk.y);
+                mirror.draw(0,0,tamk.x,tamk.y);
                 break;
             case 2:
                 grayImage.draw(0,0,tamk.x,tamk.y);
@@ -534,10 +543,11 @@ void ofApp::keyPressed(int key){
         
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<4;i++) {
+        for (int i=0;i<8;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688); //
             //particle->addAttractionPoint(0,0,10);
             particle->setRadius(1);
+            particle->color.set(255,255,255,255);
             micelio_player_1.push_back(particle);
             
         }
