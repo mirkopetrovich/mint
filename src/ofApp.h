@@ -57,15 +57,16 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo) override;
 		void gotMessage(ofMessage msg) override;
     
-    void draw_fb_player_1() ;
-    void draw_fb_player_2() ;
-    void draw_fb_player_3() ;
+   
     void allocate_fb();
+    void morphogenesis(vector <shared_ptr<CustomParticle>> &micelio_player) ;
+    void draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) ;
+    void carga_lineas();
     
    
     ofShader shaderX, shaderY;
     
-    ofImage fondo_1, fondo_2;
+    ofImage fondo_1,fondo_2,fondo_3,fondo_4;
     
     ofxBox2d box2d;
     
@@ -83,19 +84,20 @@ class ofApp : public ofBaseApp{
     ofParameter<float> random, blur, gravedadX, gravedadY;
     ofParameter<int> fade1,fade2,fade3;
     ofParameter<float> tamano1,tamano2,tamano3;
-    ofParameter<int> minimo,maximo;
+    ofParameter<int> minimo,maximo,altura_micelio;
     
     ofxSvg svg;
     vector<ofPath> paths;
     ofPolyline polycallampa;
     int altura;
     int modo;
+    int nip,pip; //vis Kinect
     ofxImageSequence shrooms;
     
     float gravX, gravY;
     
    
-    bool vsync;
+    bool vsync,lineas,info,gui;
     
 #ifdef KINECT
     ofxKinect kinect;

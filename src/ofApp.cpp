@@ -4,6 +4,7 @@
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofEnableAntiAliasing();
+    ofEnableSmoothing();
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -27,7 +28,9 @@ void ofApp::setup(){
     shaderY.load("shaderBlurY");
     fondo_1.load("fondo-1.jpg");
     fondo_2.load("fondo-2.jpg");
-    modo = 0;
+    fondo_3.load("fondo-3.png");
+    fondo_4.load("fondo-4.png");
+    modo = 1;
     
     // --------------  box2d settings  ----------------------
     box2d.init();
@@ -48,6 +51,7 @@ void ofApp::setup(){
         gui1.add(random.set("random",0.2, 0.0, 1.0));
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
+        gui1.add(altura_micelio.set("altura micelio",0, -200, 200));
         
         gui2.setup("player 1");
         gui2.setPosition(220,10);
@@ -79,34 +83,8 @@ void ofApp::setup(){
     shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
     shrooms.setFrameRate(30);*/
     //---------------------------------------------------
-    {
-        // load the lines we saved...
-        ifstream f;
-        f.open(ofToDataPath("lines.txt").c_str());
-        vector <string> strLines;
-        while (!f.eof()) {
-            string ptStr;
-            getline(f, ptStr);
-            strLines.push_back(ptStr);
-        }
-        f.close();
-        
-        for (int i=0; i<strLines.size(); i++) {
-            vector <string> pts = ofSplitString(strLines[i], ",");
-            if(pts.size() > 0) {
-                auto edge = make_shared<ofxBox2dEdge>();
-                for (int j=0; j<pts.size(); j+=2) {
-                    if(pts[j].size() > 0) {
-                        float x = ofToFloat(pts[j]);
-                        float y = ofToFloat(pts[j+1]);
-                        edge->addVertex(x, y-688);
-                    }
-                }
-                edge->create(box2d.getWorld());
-                edges.push_back(edge);
-            }
-        }
-    }  // LOAD LINES
+    
+    carga_lineas(); // líneas horizonte guardadas en bin/data/lines.txt
 }
 
 //--------------------------------------------------------------
@@ -140,97 +118,32 @@ void ofApp::update(){
     }
 #endif
     
-    
     if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
     gravX=gravedadX;
     if (gravY!=gravedadY) box2d.setGravity(gravX,gravedadY);
     gravY=gravedadY;
     
     
-    
-    
-    int hifas_player_1 = micelio_player_1.size();
-    int hifas_player_2 = micelio_player_2.size();
-    int hifas_player_3 = micelio_player_3.size();
-    
-    
-  
-    for (int i=0;i<hifas_player_1;i++) {
-        
-        ofVec2f bump;                                       // creamos vector 2f para bump
-        bump.set(ofRandom(-1,1),ofRandom(-1,1));            // vector random
-        bump *= random;                                     // multiplicamos for factor random
-        bump += micelio_player_1[i]->getVelocity();         // sumamos velocidad de hifa[i]
-        bump.normalize();                                   // normaliza
-        micelio_player_1[i]->setVelocity(bump.x,bump.y);    // asignamos a velocidad de hifa[i]
-        
-        //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
-      
-        if (hifas_player_1<1000) {
-            if (ofRandom(0,1)<0.001) {
-                auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player_1[i]->getPosition().x,micelio_player_1[i]->getPosition().y);
-                nueva->setRadius(nueva->getRadius()*0.3);
-                                 micelio_player_1.push_back(nueva);
-            }
-        }
-    }
-    
+    morphogenesis(micelio_player_1);
+    morphogenesis(micelio_player_2);
+    morphogenesis(micelio_player_3);
 
-    
-   /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
-    float minDis = ofGetMousePressed() ? 300 : 200;
-    
-        for(auto &circle : micelio_player_1) {
-        float dis = mouse.distance(circle->getPosition());
-        
-       
-            circle->addAttractionPoint(mouse.x,mouse.y, 0.0006);
-            
-    }*/
-    
-    
-    
-    
-   for (int i=0;i<hifas_player_2;i++) {
-        
-        ofVec2f bump; // puedo usar bump ??? test!!
-        bump.set(ofRandom(-1,1),ofRandom(-1,1));
-        bump *= random;
-        bump += micelio_player_2[i]->getVelocity();
-        bump.normalize();
-        micelio_player_2[i]->setVelocity(bump.x,bump.y);
- 
-    }
-    
-    for (int i=0;i<hifas_player_3;i++) {
-         
-         ofVec2f bump; // puedo usar bump ??? test!!
-         bump.set(ofRandom(-1,1),ofRandom(-1,1));
-         bump *= random;
-         bump += micelio_player_3[i]->getVelocity();
-         bump.normalize();
-         micelio_player_3[i]->setVelocity(bump.x,bump.y);
-  
-     }
-    
     box2d.update();
    
-    
     ofRemove(micelio_player_1, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_2, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_3, ofxBox2dBaseShape::shouldRemoveOffScreen);
     
-    
     fb_player_1.begin();
-    draw_fb_player_1();
+    draw_fb_player(micelio_player_1);
     fb_player_1.end();
 
     fb_player_2.begin();
-    draw_fb_player_2();
+    draw_fb_player(micelio_player_2);
     fb_player_2.end();
     
     fb_player_3.begin();
-    draw_fb_player_3();
+    draw_fb_player(micelio_player_3);
     fb_player_3.end();
     
     /*altura = int(mouseY/768.*25);
@@ -244,29 +157,74 @@ void ofApp::update(){
     
 }
 
-void ofApp::draw_fb_player_1(){
+void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
     
-    for(auto &particle : micelio_player_1) {
-        //particle->setRadius(tamano1);
-       // ofSetColor(255,255,255,particle->getRadius()*255);
+    int size = micelio_player.size();
+    for (int i=0;i<size;i++) {
+        ofVec2f bump;                                       // creamos vector 2f para bump
+        bump.set(ofRandom(-1,1),ofRandom(-1,1));            // vector random
+        bump *= random;                                     // multiplicamos for factor random
+        bump += micelio_player[i]->getVelocity();           // sumamos velocidad de hifa[i]
+        bump.normalize();                                   // normaliza
+        micelio_player[i]->setVelocity(bump.x,bump.y);      // asignamos a velocidad de hifa[i]
+        
+        //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
+        
+       if (size<1000) {
+            if (ofRandom(0,1)<0.001) {
+                auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
+                nueva->setRadius(nueva->getRadius()*0.3);
+                micelio_player.push_back(nueva);
+            }
+        }
+    }
+    
+    /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
+     float minDis = ofGetMousePressed() ? 300 : 200;
+     
+         for(auto &circle : micelio_player_1) {
+         float dis = mouse.distance(circle->getPosition());
+         
+        
+             circle->addAttractionPoint(mouse.x,mouse.y, 0.0006);
+             
+     }*/
+    
+}
+
+void ofApp::draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) {
+    for (auto &particle : micelio_player) {
         particle->draw();
     }
 }
 
-void ofApp::draw_fb_player_2(){
- 
-    for(auto &particle : micelio_player_2) {
-        particle->setRadius(tamano2);
-        particle->draw();
-    }
-}
-
-void ofApp::draw_fb_player_3(){
- 
-    for(auto &particle : micelio_player_3) {
-        particle->setRadius(tamano3);
-        particle->draw();
-    }
+void ofApp::carga_lineas() {
+    
+        ifstream f;
+        f.open(ofToDataPath("lines.txt").c_str());
+        vector <string> strLines;
+        while (!f.eof()) {
+            string ptStr;
+            getline(f, ptStr);
+            strLines.push_back(ptStr);
+        }
+        f.close();
+        
+        for (int i=0; i<strLines.size(); i++) {
+            vector <string> pts = ofSplitString(strLines[i], ",");
+            if(pts.size() > 0) {
+                auto edge = make_shared<ofxBox2dEdge>();
+                for (int j=0; j<pts.size(); j+=2) {
+                    if(pts[j].size() > 0) {
+                        float x = ofToFloat(pts[j]);
+                        float y = ofToFloat(pts[j+1]);
+                        edge->addVertex(x, y-688);
+                    }
+                }
+                edge->create(box2d.getWorld());
+                edges.push_back(edge);
+            }
+        }
 }
 
 
@@ -276,9 +234,14 @@ void ofApp::draw(){
     ofBackground(0);
     ofSetColor(255);
     
-    if (modo==1) fondo_1.draw(0,0,1920,1200);
-    if (modo==2) fondo_2.draw(0,0,1920,1200);
     
+    ofPushMatrix();
+    ofTranslate(0,altura_micelio);
+    if (modo==1) fondo_1.draw(0,0);
+    if (modo==2) fondo_2.draw(0,0);
+    if (modo==3) fondo_3.draw(0,0);
+    if (modo==4) fondo_4.draw(0,0);
+    ofPopMatrix();
     ;
     ofSetColor(230,200,0);
     
@@ -286,9 +249,15 @@ void ofApp::draw(){
         
         line.draw();
    }
-   // for (auto & edge : edges) {
-   //     edge->draw();
-   //}
+   
+    if (lineas) {                    // Tecla 'l' dibuja línea horizonte
+        for (auto & edge : edges) {
+            ofPushMatrix();
+            ofTranslate(0,688);
+            edge->draw();
+            ofPopMatrix();
+        }
+    }
 
 
     //BLUR
@@ -353,7 +322,6 @@ void ofApp::draw(){
     shaderY.end();
     fb_blur_Y3.end();
     
-    
     ofSetColor(255,255,255,fade1);
     fb_blur_Y1.draw(0,688); // 0,688
     ofSetColor(255,255,255,fade2);
@@ -363,48 +331,72 @@ void ofApp::draw(){
     ofSetColor(255,255,255,255);
     
    /* polycallampa.draw();
-    
     float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
-    
-    //
     ofVec2f punto(0,0);
-    
     if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
-    
     shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);*/
 
 #ifdef KINECT
-    kinect.draw(875,10,160,120);
-    kinect.drawDepth(1040,10,160,120);
-    grayImage.draw(1205,10,160,120);
-    grayImage2.draw(1370,10,160,120);
+    
     grayImage.draw(0,900,1920,120);
-    ofSetColor(255);
+    ofPushMatrix();
     ofScale(2.);
     ofTranslate(200,0);
     contourFinder.draw();
-    ofTranslate(-200,0);
-    ofScale(0.5);
+    ofPopMatrix();
+    
+    ofVec2f posk,tamk;
+    if (pip!=0) {
+        if (pip==1) {
+            posk.set(1600,10);
+            tamk.set(320,240);
+        }
+        if (pip==2) {
+            posk.set(160,0);
+            tamk.set(1600,1200);
+        }
+        ofPushMatrix();
+        ofTranslate(posk);
+        switch(nip) {
+            case 0:
+                kinect.draw(0,0,tamk.x,tamk.y);
+                break;
+            case 1:
+                kinect.drawDepth(0,0,tamk.x,tamk.y);
+                break;
+            case 2:
+                grayImage.draw(0,0,tamk.x,tamk.y);
+                break;
+            case 3:
+                grayImage2.draw(0,0,tamk.x,tamk.y);
+                break;
+        }
+        ofPopMatrix();
+    }
+    
 #endif
     
-    
-    ofDrawBitmapString("x: "+ ofToString(mouseX),1740,10);
-    ofDrawBitmapString("y: "+ ofToString(mouseY),1740,20);
-    ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),1740,30);
-    ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),1740,40);
-    ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),1740,50);
-    ofDrawBitmapString("lineas: "+ ofToString(edges.size()),1740,60);
+    if (info) {
+        ofDrawBitmapString("x: "+ ofToString(mouseX),875,10);
+        ofDrawBitmapString("y: "+ ofToString(mouseY),875,20);
+        ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),875,30);
+        ofDrawBitmapString("player 2: "+ ofToString(micelio_player_2.size()),875,40);
+        ofDrawBitmapString("player 3: "+ ofToString(micelio_player_3.size()),875,50);
+        ofDrawBitmapString("lineas: "+ ofToString(edges.size()),875,60);
 #ifdef KINECT
-    ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),1740,70);
-    ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),1740,80);
+        ofDrawBitmapString("Kinect W: "+ ofToString(kinect.getWidth()),875,70);
+        ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),875,80);
 #endif
-    ofDrawBitmapString("key "+ ofToString(modo),1740,90);
+        ofDrawBitmapString("key: "+ ofToString(modo),875,90);
+        ofDrawBitmapString("PIP: "+ ofToString(nip),875,100);
+    }
     
-    
-    gui1.draw();
-    gui2.draw();
-    gui3.draw();
-    gui4.draw();
+    if (gui) {
+        gui1.draw();
+        gui2.draw();
+        gui3.draw();
+        gui4.draw();
+    }
 }
 
 void ofApp::allocate_fb(){
@@ -469,9 +461,61 @@ void ofApp::keyPressed(int key){
    
     
     if (key>47 && key<58) modo=key-48;
+    if (key == 'g') gui=!gui ;
+    if (key == 'i') info=!info ;
+    if (key == 'l') lineas=!lineas ;
+    if (key == 'o') {
+        nip++;
+        nip%=4;
+    }
+    if (key == 'p') {
+        pip++;
+        pip%=3;
+    }
   
             
-             
+    if(key == 's') {
+        micelio_player_1.clear();
+        fb_player_1.begin();
+        ofClear(0,0,0,0);
+        fb_player_1.end();
+        fb_blur_X1.begin();
+        ofClear(0,0,0,0);
+        fb_blur_X1.end();
+        fb_blur_Y1.begin();
+        ofClear(0,0,0,0);
+        fb_blur_Y1.end();
+        
+    }
+    
+    if(key == 'd') {
+        micelio_player_2.clear();
+        fb_player_2.begin();
+        ofClear(0,0,0,0);
+        fb_player_2.end();
+        fb_blur_X2.begin();
+        ofClear(0,0,0,0);
+        fb_blur_X2.end();
+        fb_blur_Y2.begin();
+        ofClear(0,0,0,0);
+        fb_blur_Y2.end();
+        
+    }
+       
+    if(key == 'f') {
+        micelio_player_3.clear();
+        fb_player_3.begin();
+        ofClear(0,0,0,0);
+        fb_player_3.end();
+        fb_blur_X3.begin();
+        ofClear(0,0,0,0);
+        fb_blur_X3.end();
+        fb_blur_Y3.begin();
+        ofClear(0,0,0,0);
+        fb_blur_Y3.end();
+        
+    }
+       
                  
     
     if(key == 'a') {
@@ -492,8 +536,9 @@ void ofApp::keyPressed(int key){
     
     if(key == 'x') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<10;i++) {
+        for (int i=0;i<4;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688);
+            particle->setRadius(1);
             micelio_player_2.push_back(particle);
         }
     }
@@ -502,6 +547,7 @@ void ofApp::keyPressed(int key){
         //ofSetBackgroundAuto(false);
         for (int i=0;i<10;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688);
+            particle->setRadius(1);
             micelio_player_3.push_back(particle);
         }
     }
