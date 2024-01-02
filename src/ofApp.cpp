@@ -141,7 +141,8 @@ void ofApp::update(){
     ofRemove(micelio_player_3, ofxBox2dBaseShape::shouldRemoveOffScreen);
     
     fb_player_1.begin();
-    draw_fb_player(micelio_player_1);
+    //draw_fb_player(micelio_player_1);
+    fondo_1.draw(0,-688);
     fb_player_1.end();
 
     fb_player_2.begin();
@@ -251,7 +252,7 @@ void ofApp::draw(){
     if (modo==3) fondo_3.draw(0,0);
     if (modo==4) fondo_4.draw(0,0);
     ofPopMatrix();
-    ;
+    
     ofSetColor(230,200,0);
     
     for (auto &line : lines) {
@@ -570,8 +571,6 @@ void ofApp::keyPressed(int key){
             micelio_player_3.push_back(particle);
         }
     }
-    
-    if(key == ' ') {
         
         // want to save out some line...
         if(key == ' ') {
@@ -588,7 +587,7 @@ void ofApp::keyPressed(int key){
             }
             f.close();lines.clear();
         }
-    }
+    
 }
 
 //--------------------------------------------------------------
