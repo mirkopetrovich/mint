@@ -1,5 +1,8 @@
 #include "ofApp.h"
 
+using namespace ofxCv;
+using namespace cv;
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
@@ -17,7 +20,7 @@ void ofApp::setup(){
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
     }
 #endif
-    kinect.setCameraTiltAngle(5); //25
+    kinect.setCameraTiltAngle(10); //25
 #endif
     
     ofSetBackgroundAuto(true);
@@ -141,8 +144,8 @@ void ofApp::update(){
     ofRemove(micelio_player_3, ofxBox2dBaseShape::shouldRemoveOffScreen);
     
     fb_player_1.begin();
-    //draw_fb_player(micelio_player_1);
-    fondo_1.draw(0,-688);
+    draw_fb_player(micelio_player_1);
+    //fondo_1.draw(0,-688);
     fb_player_1.end();
 
     fb_player_2.begin();
@@ -241,7 +244,7 @@ void ofApp::carga_lineas() {
 //--------------------------------------------------------------
 void ofApp::draw(){
   
-    ofBackground(0);
+    ofBackground(0,0,255);
     ofSetColor(255);
     
     
@@ -353,10 +356,52 @@ void ofApp::draw(){
     
     if (kontorno) {
         ofPushMatrix();
-        ofScale(2.);
-        ofTranslate(200,0);
-        contourFinder.draw();
+        ofTranslate(160,0);
+        ofScale(2.5);
+        
+        grayImage.draw(0,0);
+        //contourFinder.draw();
+       
+        ofSetHexColor(0xFFFF00);
+        ofNoFill();
+        int n = contourFinder.size();
+        for (int i=0; i <n; i++) {
+            ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
+            convexHull.draw();
+            ofSetHexColor(0xFF00FF);
+            ofFill();
+            for (int i=0;i<int(convexHull.size());i++) {
+                ofDrawCircle(convexHull.getVertices()[i].x,convexHull.getVertices()[i].y,7);
+                }
+            
+            // defects of the convex hull
+            vector<cv::Vec4i> defects = contourFinder.getConvexityDefects(i);
+            ofSetHexColor(0xFFFF00);
+            for(int j = 0; j < defects.size(); j++) {
+                ofDrawLine(defects[j][0], defects[j][1], defects[j][2], defects[j][3]);
+            }
+            
+            // some different styles of contour centers
+            ofVec2f centroid = toOf(contourFinder.getCentroid(i));
+            ofVec2f average = toOf(contourFinder.getAverage(i));
+            ofVec2f center = toOf(contourFinder.getCenter(i));
+            ofSetColor(cyanPrint);
+            ofDrawCircle(centroid, 8);
+            ofSetColor(magentaPrint);
+            ofDrawCircle(average, 8);
+            ofSetColor(yellowPrint);
+            ofDrawCircle(center, 8);
+            
+            ofVec2f balance = toOf(contourFinder.getBalance(i));
+            ofPushMatrix();
+            ofTranslate(centroid.x, centroid.y);
+            ofScale(5, 5);
+            ofSetHexColor(0xFF0000);
+            ofDrawLine(0, 0, balance.x, balance.y);
+            ofPopMatrix();
+        }
         ofPopMatrix();
+    
     }
     
     ofVec2f posk,tamk;
@@ -386,13 +431,14 @@ void ofApp::draw(){
                 break;
         }
         ofPopMatrix();
+        ofSetColor(255);
     }
     
 #endif
     
     if (info) {
         ofPushMatrix();
-        ofTranslate(10,180);
+        ofTranslate(1440,10);
         ofDrawBitmapString("x: "+ ofToString(mouseX),0,10);
         ofDrawBitmapString("y: "+ ofToString(mouseY),0,20);
         ofDrawBitmapString("player 1: "+ ofToString(micelio_player_1.size()),0,30);
@@ -483,6 +529,7 @@ void ofApp::keyPressed(int key){
     if (key == 'g') gui=!gui ;
     if (key == 'i') info=!info ;
     if (key == 'l') lineas=!lineas ;
+    if (key == 'q') ofToggleFullscreen();
     if (key == 'o') {
         nip++;
         nip%=4;
