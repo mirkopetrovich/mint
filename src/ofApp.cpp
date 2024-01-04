@@ -6,8 +6,8 @@ using namespace cv;
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
-    //ofEnableAntiAliasing();
-    //ofEnableSmoothing();
+    ofEnableAntiAliasing();
+    ofEnableSmoothing();
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -15,17 +15,15 @@ void ofApp::setup(){
     //kinect.init(true); // shows infrared instead of RGB video image
     //kinect.init(false, false); // disable video image (faster fps)
     kinect.open();
-#ifdef DEBUG
     if (kinect.isConnected()) {
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
     }
-#endif
     kinect.setCameraTiltAngle(20); //25
 #endif
     
     ofSetBackgroundAuto(true);
     ofSetVerticalSync(true);
-    ofBackground(0);
+    //ofBackground(0);
     ofDisableArbTex(); //Use GL_TEXTURE_2D textures.
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
@@ -47,7 +45,7 @@ void ofApp::setup(){
     gravX = 0.0;
     gravY = -1.4;
     // ------------------ gui settings -------------------------------
-    {gui1.setup();
+    gui1.setup();
         gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
         gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
         gui1.add(blur.set("blur",1.1,0.0,2.0));
@@ -55,10 +53,11 @@ void ofApp::setup(){
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
         gui1.add(altura_micelio.set("altura micelio",0, -250, 100));
-        gui1.add(cerca_1.set("umbral cerca 1",240, 50, 300));
-        gui1.add(lejos_1.set("umbral lejos 1",20, 0, 150));
-        gui1.add(cerca_2.set("umbral cerca 2",100, 50, 300));
-        gui1.add(lejos_2.set("umbral lejos 2",40, 0, 150));
+        gui1.add(cerca_1.set("umbral cerca 1",240, 50, 255)); //UMBRAL SALA
+        gui1.add(lejos_1.set("umbral lejos 1",20, 0, 150));   //UMBRAL SALA
+        gui1.add(cerca_2.set("umbral cerca 2",20, 50, 255));
+        gui1.add(lejos_2.set("umbral lejos 2",0, 0, 150));
+        
         
         gui2.setup("player 1");
         gui2.setPosition(220,10);
@@ -74,9 +73,11 @@ void ofApp::setup(){
         gui4.setup("player 3");
         gui4.setPosition(660,10);
         gui4.add(fade3.set("fade",255, 0, 255));
-        gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));} // GUI SETTINGS
+        gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));
     // ----------------------------------------------------------------
-    
+    fb_x = 1920;
+    fb_y = 720;
+    offset_fb_y = 1200-fb_y;
     allocate_fb(); // framebuffer settings
     
     // ------------------------------------------------------------
@@ -244,7 +245,10 @@ void ofApp::carga_lineas() {
 //--------------------------------------------------------------
 void ofApp::draw(){
   
-    ofBackground(0,0,255);
+    
+    if (color_fondo) ofBackground(0,0,0);
+    else ofBackground(0,0,255);
+    
     ofSetColor(255);
     
     
@@ -266,7 +270,7 @@ void ofApp::draw(){
     if (lineas) {                    // Tecla 'l' dibuja línea horizonte
         for (auto & edge : edges) {
             ofPushMatrix();
-            ofTranslate(0,688);
+            ofTranslate(0,offset_fb_y);
             edge->draw();
             ofPopMatrix();
         }
@@ -280,7 +284,7 @@ void ofApp::draw(){
     shaderX.begin();
     shaderX.setUniformTexture("tex0", fb_player_1.getTexture(),1);
     shaderX.setUniform1f("blurAmnt", blur);
-    shaderX.setUniform1f("texwidth", 1920);
+    shaderX.setUniform1f("texwidth", fb_x);
     fb_player_1.draw(0,0);
     shaderX.end();
     fb_blur_X1.end();
@@ -290,7 +294,7 @@ void ofApp::draw(){
     shaderY.begin();
     shaderY.setUniformTexture("tex0", fb_blur_X1.getTexture(),1);
     shaderY.setUniform1f("blurAmnt", blur);
-    shaderY.setUniform1f("texheight", 1512);
+    shaderY.setUniform1f("texheight", fb_y);
     fb_blur_Y1.draw(0,0);
     shaderY.end();
     fb_blur_Y1.end();
@@ -300,7 +304,7 @@ void ofApp::draw(){
     shaderX.begin();
     shaderX.setUniformTexture("tex0", fb_player_2.getTexture(),1);
     shaderX.setUniform1f("blurAmnt", blur);
-    shaderX.setUniform1f("texwidth", 1920);
+    shaderX.setUniform1f("texwidth", fb_x);
     fb_player_2.draw(0,0);
     shaderX.end();
     fb_blur_X2.end();
@@ -310,7 +314,7 @@ void ofApp::draw(){
     shaderY.begin();
     shaderY.setUniformTexture("tex0", fb_blur_X2.getTexture(),1);
     shaderY.setUniform1f("blurAmnt", blur);
-    shaderY.setUniform1f("texheight", 1512);
+    shaderY.setUniform1f("texheight", fb_y);
     fb_blur_Y2.draw(0,0);
     shaderY.end();
     fb_blur_Y2.end();
@@ -320,7 +324,7 @@ void ofApp::draw(){
     shaderX.begin();
     shaderX.setUniformTexture("tex0", fb_player_3.getTexture(),1);
     shaderX.setUniform1f("blurAmnt", blur);
-    shaderX.setUniform1f("texwidth", 1920);
+    shaderX.setUniform1f("texwidth", fb_x);
     fb_player_3.draw(0,0);
     shaderX.end();
     fb_blur_X3.end();
@@ -330,17 +334,17 @@ void ofApp::draw(){
     shaderY.begin();
     shaderY.setUniformTexture("tex0", fb_blur_X3.getTexture(),1);
     shaderY.setUniform1f("blurAmnt", blur);
-    shaderY.setUniform1f("texheight", 1512);
+    shaderY.setUniform1f("texheight", fb_y);
     fb_blur_Y3.draw(0,0);
     shaderY.end();
     fb_blur_Y3.end();
     
     ofSetColor(255,255,255,fade1);
-    fb_blur_Y1.draw(0,688); // 0,688
+    fb_blur_Y1.draw(0,offset_fb_y); // 0,688
     ofSetColor(255,255,255,fade2);
-    fb_blur_Y2.draw(0,688); // 0,688
+    fb_blur_Y2.draw(0,offset_fb_y); // 0,688
     ofSetColor(255,255,255,fade3);
-    fb_blur_Y3.draw(0,688); // 0,688
+    fb_blur_Y3.draw(0,offset_fb_y); // 0,688
     ofSetColor(255,255,255,255);
     
    /* polycallampa.draw();
@@ -366,7 +370,7 @@ void ofApp::draw(){
         ofNoFill();
         int n = contourFinder.size();
         for (int i=0; i <n; i++) {
-            ofPolyline convexHull = toOf(contourFinder.getConvexHull(i));
+            ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
             convexHull.draw();
             ofSetHexColor(0xFF00FF);
             ofFill();
@@ -381,16 +385,13 @@ void ofApp::draw(){
                 ofDrawLine(defects[j][0], defects[j][1], defects[j][2], defects[j][3]);
             }
             
-            // some different styles of contour centers
+         
             ofVec2f centroid = toOf(contourFinder.getCentroid(i));
-            ofVec2f average = toOf(contourFinder.getAverage(i));
-            ofVec2f center = toOf(contourFinder.getCenter(i));
             ofSetColor(cyanPrint);
-            ofDrawCircle(centroid, 8);
-            ofSetColor(magentaPrint);
-            ofDrawCircle(average, 8);
+            ofDrawCircle(centroid, 15);
             ofSetColor(yellowPrint);
-            ofDrawCircle(center, 8);
+            ofDrawBitmapString(ofToString(i),centroid);
+        
             
             ofVec2f balance = toOf(contourFinder.getBalance(i));
             ofPushMatrix();
@@ -466,47 +467,47 @@ void ofApp::allocate_fb(){
     
     
     //  -------------- framebuffer settings -----------------------
-    fb_player_1.allocate(1920,512,GL_RGBA);
+    fb_player_1.allocate(fb_x,fb_y,GL_RGBA);
     fb_player_1.begin();
     ofClear(0,0,0,0);
     fb_player_1.end();
     
-    fb_player_2.allocate(1920,512,GL_RGBA);
+    fb_player_2.allocate(fb_x,fb_y,GL_RGBA);
     fb_player_2.begin();
     ofClear(0,0,0,0);
     fb_player_2.end();
     
-    fb_player_3.allocate(1920,512,GL_RGBA);
+    fb_player_3.allocate(fb_x,fb_y,GL_RGBA);
     fb_player_3.begin();
     ofClear(0,0,0,0);
     fb_player_3.end();
     
-    fb_blur_X1.allocate(1920,512,GL_RGBA);
+    fb_blur_X1.allocate(fb_x,fb_y,GL_RGBA);
     fb_blur_X1.begin();
     ofClear(0,0,0,0);
     fb_blur_X1.end();
     
-    fb_blur_Y1.allocate(1920,512,GL_RGBA);
+    fb_blur_Y1.allocate(fb_x,fb_y,GL_RGBA);
     fb_blur_Y1.begin();
     ofClear(0,0,0,0);
     fb_blur_Y1.end();
     
-    fb_blur_X2.allocate(1920,512,GL_RGBA);
+    fb_blur_X2.allocate(fb_x,fb_y,GL_RGBA);
     fb_blur_X2.begin();
     ofClear(0,0,0,0);
     fb_blur_X2.end();
     
-    fb_blur_Y2.allocate(1920,512,GL_RGBA);
+    fb_blur_Y2.allocate(fb_x,fb_y,GL_RGBA);
     fb_blur_Y2.begin();
     ofClear(0,0,0,0);
     fb_blur_Y2.end();
     
-    fb_blur_X3.allocate(1920,512,GL_RGBA);
+    fb_blur_X3.allocate(fb_x,fb_y,GL_RGBA);
     fb_blur_X3.begin();
     ofClear(0,0,0,0);
     fb_blur_X3.end();
     
-    fb_blur_Y3.allocate(1920,512,GL_RGBA);
+    fb_blur_Y3.allocate(fb_x,fb_y,GL_RGBA);
     fb_blur_Y3.begin();
     ofClear(0,0,0,0);
     fb_blur_Y3.end();
@@ -529,7 +530,8 @@ void ofApp::keyPressed(int key){
     if (key == 'g') gui=!gui ;
     if (key == 'i') info=!info ;
     if (key == 'l') lineas=!lineas ;
-    if (key == 'q') ofToggleFullscreen();
+    if (key == 'f') ofToggleFullscreen();
+    if (key == 'q') color_fondo=!color_fondo;
     if (key == 'o') {
         nip++;
         nip%=4;
@@ -551,10 +553,6 @@ void ofApp::keyPressed(int key){
         fb_blur_Y1.begin();
         ofClear(0,0,0,0);
         fb_blur_Y1.end();
-        
-    }
-    
-    if(key == 'd') {
         micelio_player_2.clear();
         fb_player_2.begin();
         ofClear(0,0,0,0);
@@ -565,10 +563,6 @@ void ofApp::keyPressed(int key){
         fb_blur_Y2.begin();
         ofClear(0,0,0,0);
         fb_blur_Y2.end();
-        
-    }
-       
-    if(key == 'f') {
         micelio_player_3.clear();
         fb_player_3.begin();
         ofClear(0,0,0,0);
@@ -579,7 +573,6 @@ void ofApp::keyPressed(int key){
         fb_blur_Y3.begin();
         ofClear(0,0,0,0);
         fb_blur_Y3.end();
-        
     }
        
                  
@@ -592,7 +585,7 @@ void ofApp::keyPressed(int key){
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
         for (int i=0;i<8;i++) {
-            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688); //
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
             //particle->addAttractionPoint(0,0,10);
             particle->setRadius(1);
             particle->color.set(255,255,255,255);
@@ -604,7 +597,7 @@ void ofApp::keyPressed(int key){
     if(key == 'x') {
         //ofSetBackgroundAuto(false);
         for (int i=0;i<4;i++) {
-            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688);
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
             particle->setRadius(1);
             micelio_player_2.push_back(particle);
         }
@@ -613,7 +606,7 @@ void ofApp::keyPressed(int key){
     if(key == 'c') {
         //ofSetBackgroundAuto(false);
         for (int i=0;i<10;i++) {
-            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-688);
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
             particle->setRadius(1);
             micelio_player_3.push_back(particle);
         }
@@ -670,7 +663,7 @@ void ofApp::mouseReleased(int x, int y, int button){
     lines.back().simplify();
     
     for (int i=0; i<lines.back().size(); i++) {
-        edge->addVertex(lines.back()[i]+ofPoint(0,-688)); //0,-688
+        edge->addVertex(lines.back()[i]+ofPoint(0,-offset_fb_y)); //0,-688
     }
     
     //edge->setPhysics(1, .2, 1);  // uncomment this to see it fall!

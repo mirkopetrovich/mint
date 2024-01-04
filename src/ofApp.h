@@ -10,7 +10,7 @@
 #include "ofxCv.h"
 
 #define KINECT
-#define DEBUG
+
 
 
 // ------------------------------------------------- a simple extended box2d circle
@@ -81,6 +81,7 @@ class ofApp : public ofBaseApp{
     ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3;
     
     ofxPanel gui1, gui2, gui3, gui4;
+    
 
     ofParameter<float> random, blur, gravedadX, gravedadY;
     ofParameter<int> fade1,fade2,fade3;
@@ -94,12 +95,13 @@ class ofApp : public ofBaseApp{
     int altura;
     int modo;
     int nip,pip; //vis Kinect
+    int fb_x,fb_y,offset_fb_y;
     ofxImageSequence shrooms;
     
     float gravX, gravY;
     
    
-    bool vsync,lineas,info,gui,kontorno,tracker;
+    bool vsync,lineas,info,gui,kontorno,tracker,color_fondo;
     
 #ifdef KINECT
     ofxKinect kinect;
