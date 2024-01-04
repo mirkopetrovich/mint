@@ -120,11 +120,28 @@ void ofApp::update(){
         grayThreshFar2.threshold(lejos_2);
         cvAnd(grayThreshNear2.getCvImage(), grayThreshFar2.getCvImage(), grayImage2.getCvImage(), NULL);
         
+       /*grayImage.erode_3x3();
+        grayImage.erode_3x3();
+        grayImage.dilate_3x3();*/
+        
+        
+        grayImage.blur(mouseY/100);
+        grayImage.contrastStretch();
+
+
+    
+
+
+        
+        
+      
+        
         contourFinder.setMinAreaRadius(minimo);
         contourFinder.setMaxAreaRadius(maximo);
         contourFinder.setThreshold(0);
         contourFinder.findContours(grayImage);
         contourFinder.setFindHoles(false);
+        contourFinder.setSimplify(true);
     }
 #endif
     
@@ -363,8 +380,8 @@ void ofApp::draw(){
         ofTranslate(160,0);
         ofScale(2.5);
         
-        grayImage.draw(0,0);
-        //contourFinder.draw();
+        //grayImage.draw(0,0);
+        contourFinder.draw();
        
         ofSetHexColor(0xFFFF00);
         ofNoFill();
