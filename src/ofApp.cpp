@@ -20,7 +20,7 @@ void ofApp::setup(){
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
     }
 #endif
-    kinect.setCameraTiltAngle(10); //25
+    kinect.setCameraTiltAngle(20); //25
 #endif
     
     ofSetBackgroundAuto(true);
@@ -54,9 +54,9 @@ void ofApp::setup(){
         gui1.add(random.set("random",0.2, 0.0, 1.0));
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
-        gui1.add(altura_micelio.set("altura micelio",0, -200, 200));
-        gui1.add(cerca_1.set("umbral cerca 1",220, 50, 300));
-        gui1.add(lejos_1.set("umbral lejos 1",80, 0, 150));
+        gui1.add(altura_micelio.set("altura micelio",0, -250, 100));
+        gui1.add(cerca_1.set("umbral cerca 1",240, 50, 300));
+        gui1.add(lejos_1.set("umbral lejos 1",20, 0, 150));
         gui1.add(cerca_2.set("umbral cerca 2",100, 50, 300));
         gui1.add(lejos_2.set("umbral lejos 2",40, 0, 150));
         
@@ -366,7 +366,7 @@ void ofApp::draw(){
         ofNoFill();
         int n = contourFinder.size();
         for (int i=0; i <n; i++) {
-            ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
+            ofPolyline convexHull = toOf(contourFinder.getConvexHull(i));
             convexHull.draw();
             ofSetHexColor(0xFF00FF);
             ofFill();
