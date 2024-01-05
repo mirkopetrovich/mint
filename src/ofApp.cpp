@@ -8,6 +8,7 @@ void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofEnableAntiAliasing();
     ofEnableSmoothing();
+    ofHideCursor();
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -48,11 +49,11 @@ void ofApp::setup(){
     gui1.setup();
         gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
         gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
-        gui1.add(blur.set("blur",1.1,0.0,2.0));
+        gui1.add(blur.set("blur",0.5,0.0,2.0));
         gui1.add(random.set("random",0.2, 0.0, 1.0));
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
-        gui1.add(altura_micelio.set("altura micelio",0, -250, 100));
+        gui1.add(altura_micelio.set("altura micelio",-223, -250, 100));
         gui1.add(cerca_1.set("umbral cerca 1",240, 50, 255)); //UMBRAL SALA
         gui1.add(lejos_1.set("umbral lejos 1",20, 0, 150));   //UMBRAL SALA
         gui1.add(cerca_2.set("umbral cerca 2",20, 50, 255));
@@ -198,13 +199,13 @@ void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
         
         //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
         
-       if (size<100) {
+       if (size<50) {
             if (ofRandom(0,1)<0.001) {
                 int alf;
                 auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
-                nueva->setRadius(micelio_player[i]->getRadius()*0.6);
-                alf=micelio_player[i]->color.a-30;
-                nueva->color.set(255,255,255,alf);
+                nueva->setRadius(micelio_player[i]->getRadius());
+               // alf=micelio_player[i]->color.a-30;
+                //nueva->color.set(255,255,255,alf);
                 micelio_player.push_back(nueva);
             }
         }
@@ -249,7 +250,7 @@ void ofApp::carga_lineas() {
                     if(pts[j].size() > 0) {
                         float x = ofToFloat(pts[j]);
                         float y = ofToFloat(pts[j+1]);
-                        edge->addVertex(x, y-688);
+                        edge->addVertex(x, y-offset_fb_y);
                     }
                 }
                 edge->create(box2d.getWorld());
@@ -263,14 +264,14 @@ void ofApp::carga_lineas() {
 void ofApp::draw(){
   
     
-    if (color_fondo) ofBackground(0,0,0);
+    if (!color_fondo) ofBackground(0,0,0);
     else ofBackground(0,0,255);
     
     ofSetColor(255);
     
     
     ofPushMatrix();
-    ofTranslate(0,altura_micelio);
+    ofTranslate(-100,altura_micelio);
     if (modo==1) fondo_1.draw(0,0);
     if (modo==2) fondo_2.draw(0,0);
     if (modo==3) fondo_3.draw(0,0);
@@ -282,6 +283,7 @@ void ofApp::draw(){
     for (auto &line : lines) {
         
         line.draw();
+        
    }
    
     if (lineas) {                    // Tecla 'l' dibuja línea horizonte
@@ -472,6 +474,8 @@ void ofApp::draw(){
         ofPopMatrix();
     }
     
+    ofDrawCircle(mouseX,mouseY,1);
+    
     if (gui) {
         gui1.draw();
         gui2.draw();
@@ -604,7 +608,7 @@ void ofApp::keyPressed(int key){
         for (int i=0;i<8;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
             //particle->addAttractionPoint(0,0,10);
-            particle->setRadius(1);
+            particle->setRadius(0.8);
             particle->color.set(255,255,255,255);
             micelio_player_1.push_back(particle);
             
