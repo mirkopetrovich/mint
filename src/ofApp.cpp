@@ -126,7 +126,7 @@ void ofApp::update(){
         grayImage.dilate_3x3();*/
         
         
-        grayImage.blur(mouseY/100);
+        //grayImage.blur(mouseY/100);
         grayImage.contrastStretch();
 
 
@@ -383,13 +383,13 @@ void ofApp::draw(){
         ofScale(2.5);
         
         //grayImage.draw(0,0);
-        contourFinder.draw();
+        //contourFinder.draw();
        
         ofSetHexColor(0xFFFF00);
         ofNoFill();
         int n = contourFinder.size();
         for (int i=0; i <n; i++) {
-            ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
+            /*ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
             convexHull.draw();
             ofSetHexColor(0xFF00FF);
             ofFill();
@@ -402,13 +402,13 @@ void ofApp::draw(){
             ofSetHexColor(0xFFFF00);
             for(int j = 0; j < defects.size(); j++) {
                 ofDrawLine(defects[j][0], defects[j][1], defects[j][2], defects[j][3]);
-            }
+            }*/
             
          
             ofVec2f centroid = toOf(contourFinder.getCentroid(i));
             ofSetColor(cyanPrint);
             ofDrawCircle(centroid, 15);
-            ofSetColor(yellowPrint);
+            /*ofSetColor(yellowPrint);
             ofDrawBitmapString(ofToString(i),centroid);
         
             
@@ -418,7 +418,7 @@ void ofApp::draw(){
             ofScale(5, 5);
             ofSetHexColor(0xFF0000);
             ofDrawLine(0, 0, balance.x, balance.y);
-            ofPopMatrix();
+            ofPopMatrix();*/
         }
         ofPopMatrix();
     
