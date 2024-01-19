@@ -5,10 +5,20 @@ using namespace cv;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    
+    /*
+     glm::vec2 lp1(0,0);
+     for (int i=0; i<10; i++) lp.push_back(lp1);
+     for (int i=0; i<15; i++) avg.push_back(lp1);
+     */
+    
+    
+ 
+    
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofEnableAntiAliasing();
     ofEnableSmoothing();
-    ofHideCursor();
+    //ofHideCursor();
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -98,6 +108,30 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    /*glm::vec2 mouse(mouseX,mouseY);
+    lp.erase(lp.begin());
+    lp.push_back(mouse);
+    
+    avg.pop_front();
+    avg.push_back(mouse);
+    
+    
+    glm::vec2 mice;
+    glm::vec2 mice2;
+
+    for (auto &valor : lp) mice2 +=valor;
+    mice2= mice2/lp.size();
+    
+    int tam = avg.size();
+    for (int i=0; i<tam ; i++) mice +=avg[i];
+    mice = mice/tam;
+  
+    mxx = mice2.x;
+    myy = mice2.y;
+        
+    mx = mice.x;
+    my = mice.y;*/
     
 #ifdef KINECT
     kinect.update();
@@ -195,7 +229,9 @@ void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
         bump *= random;                                     // multiplicamos for factor random
         bump += micelio_player[i]->getVelocity();           // sumamos velocidad de hifa[i]
         bump.normalize();                                   // normaliza
-        micelio_player[i]->setVelocity(bump.x,bump.y);      // asignamos a velocidad de hifa[i]
+        
+        if (size<50) micelio_player[i]->setVelocity(bump.x,bump.y);      // asignamos a velocidad de hifa[i]
+        else micelio_player[i]->setVelocity(0,0);
         
         //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
         
@@ -608,7 +644,7 @@ void ofApp::keyPressed(int key){
         for (int i=0;i<8;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
             //particle->addAttractionPoint(0,0,10);
-            particle->setRadius(0.8);
+            particle->setRadius(0.5);
             particle->color.set(255,255,255,255);
             micelio_player_1.push_back(particle);
             

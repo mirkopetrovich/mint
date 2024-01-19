@@ -116,6 +116,10 @@ class ofApp : public ofBaseApp{
     ofxCv::ContourFinder contourFinder;
 #endif
 
+    vector <glm::vec2> lp;
+    deque <glm::vec2> avg;
+    int mx,my;
+    int mxx,myy;
     
   
     
