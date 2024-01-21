@@ -60,7 +60,7 @@ class ofApp : public ofBaseApp{
     
    
     void allocate_fb();
-    void morphogenesis(vector <shared_ptr<CustomParticle>> &micelio_player) ;
+    int morphogenesis(vector <shared_ptr<CustomParticle>> &micelio_player, int lifetime) ;
     void draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) ;
     void carga_lineas();
     
@@ -74,11 +74,12 @@ class ofApp : public ofBaseApp{
     vector    <shared_ptr<CustomParticle>> micelio_player_1;
     vector    <shared_ptr<CustomParticle>> micelio_player_2;
     vector    <shared_ptr<CustomParticle>> micelio_player_3;
+    vector    <shared_ptr<CustomParticle>> esporas;
     vector    <shared_ptr<ofxBox2dEdge>>    edges;
     vector    <ofPolyline>                  lines;
     
     
-    ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3;
+    ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3, fb_esporas;
     
     ofxPanel gui1, gui2, gui3, gui4;
     
@@ -116,11 +117,11 @@ class ofApp : public ofBaseApp{
     ofxCv::ContourFinder contourFinder;
 #endif
 
-    vector <glm::vec2> lp;
     deque <glm::vec2> avg;
+    glm::vec2 m1;
     int mx,my;
     int mxx,myy;
-    
+    int tet, teta;
   
     
 };

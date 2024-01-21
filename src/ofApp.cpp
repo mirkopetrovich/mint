@@ -6,13 +6,12 @@ using namespace cv;
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    /*
+    // llenamos el buffer de player_1
      glm::vec2 lp1(0,0);
-     for (int i=0; i<10; i++) lp.push_back(lp1);
-     for (int i=0; i<15; i++) avg.push_back(lp1);
-     */
+     for (int i=0; i<20; i++) avg.push_back(lp1);
+
     
-    
+    teta = 0;
  
     
     ofSetLogLevel(OF_LOG_VERBOSE);
@@ -94,15 +93,15 @@ void ofApp::setup(){
     allocate_fb(); // framebuffer settings
     
     // ------------------------------------------------------------
-   /* svg.load("anim.svg");         // carga svg en objeto de tipo ofxSVG
+    svg.load("anim.svg");         // carga svg en objeto de tipo ofxSVG
     for (int i=0; i<svg.getNumPath();i++) {
         paths.push_back(svg.getPathAt(i));
-    }*/
+    }
     
     //--------------------------------------------------
-    /*shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
+    shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
     shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
-    shrooms.setFrameRate(30);*/
+    shrooms.setFrameRate(30);
     //---------------------------------------------------
     
     carga_lineas(); // líneas horizonte guardadas en bin/data/lines.txt
@@ -111,29 +110,16 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    /*glm::vec2 mouse(mouseX,mouseY);
-    lp.erase(lp.begin());
-    lp.push_back(mouse);
-    
+    glm::vec2 mouse(mouseX,mouseY);
     avg.pop_front();
     avg.push_back(mouse);
-    
-    
-    glm::vec2 mice;
-    glm::vec2 mice2;
-
-    for (auto &valor : lp) mice2 +=valor;
-    mice2= mice2/lp.size();
-    
+    glm::vec2 pl_1;
     int tam = avg.size();
-    for (int i=0; i<tam ; i++) mice +=avg[i];
-    mice = mice/tam;
-  
-    mxx = mice2.x;
-    myy = mice2.y;
-        
-    mx = mice.x;
-    my = mice.y;*/
+    for (int i=0; i<tam ; i++) pl_1 +=avg[i];
+    pl_1 = pl_1/tam;
+    m1.x=pl_1.x;
+    m1.y=pl_1.y;
+   
     
 #ifdef KINECT
     kinect.update();
@@ -160,19 +146,10 @@ void ofApp::update(){
        /*grayImage.erode_3x3();
         grayImage.erode_3x3();
         grayImage.dilate_3x3();*/
-        
-        
+      
         //grayImage.blur(mouseY/100);
         grayImage.contrastStretch();
 
-
-    
-
-
-        
-        
-      
-        
         contourFinder.setMinAreaRadius(minimo);
         contourFinder.setMaxAreaRadius(maximo);
         contourFinder.setThreshold(0);
@@ -190,19 +167,21 @@ void ofApp::update(){
     }
     
     
-    morphogenesis(micelio_player_1);
-    morphogenesis(micelio_player_2);
-    morphogenesis(micelio_player_3);
+    tet = morphogenesis(micelio_player_1,150);
+    if (tet) teta = 1;
+    morphogenesis(micelio_player_2,100);
+    morphogenesis(micelio_player_3,50);
+    morphogenesis(esporas,500);
 
     box2d.update();
    
     ofRemove(micelio_player_1, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_2, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_3, ofxBox2dBaseShape::shouldRemoveOffScreen);
+    ofRemove(esporas, ofxBox2dBaseShape::shouldRemoveOffScreen);
     
     fb_player_1.begin();
     draw_fb_player(micelio_player_1);
-    //fondo_1.draw(0,-688);
     fb_player_1.end();
 
     fb_player_2.begin();
@@ -213,19 +192,25 @@ void ofApp::update(){
     draw_fb_player(micelio_player_3);
     fb_player_3.end();
     
-    /*altura = int(mouseY/768.*25);
+    fb_esporas.begin();
+    ofClear(0,0,0,0);
+    draw_fb_player(esporas);
+    fb_esporas.end();
+    
+    altura = int(mouseY/768.*25);
     if (altura<0) altura=0;
     if (altura>25) altura=25;
     paths[altura].translate(ofPoint(400,700,0));
     polycallampa = paths[altura].getOutline()[0];
-    paths[altura].translate(ofPoint(-400,-700,0));*/
+    paths[altura].translate(ofPoint(-400,-700,0));
    
 
     
 }
 
-void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
+int ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player, int lifetime) {
     
+    int ret= 0;
     bool borra_micelio = false;                                 // flag para limpiar micelio al fin del loop
     int size = micelio_player.size();                           // asignamos tamaño antes del loop ya que lo modificaremos
     
@@ -238,9 +223,12 @@ void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
             bump += micelio_player[i]->getVelocity();           // sumamos velocidad de hifa[i]
             bump.normalize();                                   // normaliza
             
-            if (size<100)   {                                   // si es menor al máximo de hifas
+            if (size<lifetime)   {                                   // si es menor al máximo de hifas
                 micelio_player[i]->setVelocity(bump.x,bump.y);  //
-                micelio_player[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
+                
+                if (ofRandom(0,1)<0.5) {
+                    micelio_player[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
+                }
                 
                 if (ofRandom(0,1)<0.003) {                      // factor de mitosis
                     auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
@@ -250,11 +238,14 @@ void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
             }
             else {
                 borra_micelio = true;
+                ret = 1;
             }
         }
         
         if (borra_micelio) micelio_player.clear();
+        
     }
+    return(ret);
 }
    
        
@@ -407,19 +398,21 @@ void ofApp::draw(){
     shaderY.end();
     fb_blur_Y3.end();
     
+    
+    ofSetColor(255,255,255,255);
+    fb_esporas.draw(0,0); // 0,688
+    
     ofSetColor(255,255,255,fade1);
     fb_blur_Y1.draw(0,offset_fb_y); // 0,688
     ofSetColor(255,255,255,fade2);
     fb_blur_Y2.draw(0,offset_fb_y); // 0,688
     ofSetColor(255,255,255,fade3);
     fb_blur_Y3.draw(0,offset_fb_y); // 0,688
+  
     ofSetColor(255,255,255,255);
     
-   /* polycallampa.draw();
-    float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
-    ofVec2f punto(0,0);
-    if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
-    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);*/
+   
+   
 
 #ifdef KINECT
     
@@ -521,10 +514,17 @@ void ofApp::draw(){
         ofDrawBitmapString("key: "+ ofToString(modo),0,90);
         ofDrawBitmapString("PIP: "+ ofToString(nip),0,100);
         ofDrawBitmapString("gY: "+ ofToString(gravedadY),0,110);
+        ofDrawBitmapString("TEST: "+ ofToString(teta),0,120);
         ofPopMatrix();
     }
+    ofNoFill();
+    ofDrawCircle(m1.x,800,20);
     
-    ofDrawCircle(mouseX,mouseY,1);
+    float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
+    ofVec2f punto(0,0);
+    if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
+    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);
+    polycallampa.draw();
     
     if (gui) {
         gui1.draw();
@@ -538,6 +538,12 @@ void ofApp::allocate_fb(){
     
     
     //  -------------- framebuffer settings -----------------------
+    
+    fb_esporas.allocate(1920,1200,GL_RGBA);
+    fb_esporas.begin();
+    ofClear(0,0,0,255);
+    fb_esporas.end();
+    
     fb_player_1.allocate(fb_x,fb_y,GL_RGBA);
     fb_player_1.begin();
     ofClear(0,0,0,0);
@@ -593,7 +599,7 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
-   
+    
     
     if (key>47 && key<58) modo=key-48;
     if (key == 't') tracker=!tracker ;
@@ -611,8 +617,8 @@ void ofApp::keyPressed(int key){
         pip++;
         pip%=3;
     }
-  
-            
+    
+    
     if(key == 's') {
         micelio_player_1.clear();
         fb_player_1.begin();
@@ -645,19 +651,18 @@ void ofApp::keyPressed(int key){
         ofClear(0,0,0,0);
         fb_blur_Y3.end();
     }
-       
-                 
+    
+    
     
     if(key == 'a') {
         vsync=!vsync;
         ofSetVerticalSync(vsync);
     }
-        
+    
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<8;i++) {
+        for (int i=0;i<80;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
-            //particle->addAttractionPoint(0,0,10);
             particle->setRadius(0.4);
             particle->color.set(255,255,255,255);
             micelio_player_1.push_back(particle);
@@ -682,6 +687,15 @@ void ofApp::keyPressed(int key){
             micelio_player_3.push_back(particle);
         }
     }
+    
+if(key == 'v') {
+    //ofSetBackgroundAuto(false);
+    for (int i=0;i<100;i++) {
+        auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY);
+        particle->setRadius(0.1);
+        esporas.push_back(particle);
+    }
+}
         
         // want to save out some line...
         if(key == ' ') {
