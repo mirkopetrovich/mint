@@ -42,23 +42,25 @@ void ofApp::setup(){
     fondo_2.load("fondo-2.jpg");
     fondo_3.load("fondo-3.png");
     fondo_4.load("fondo-4.png");
-    modo = 1;
+    modo = 5; //inicia con fondo negro
     
     // --------------  box2d settings  ----------------------
+    
+    gY = -1.4;
     box2d.init();
-    box2d.setGravity(0.0,0);
+    box2d.setGravity(0.0,gY);
     //box2d.createGround(0,50, 1920,50);
     //box2d.createBounds(0,0, 1921,513);
     //box2d.checkBounds(true);
     //box2d.setFPS(60.0);
     box2d.registerGrabbing();
     // -------------------------------------------------------
-    gravX = 0.0;
-    gravY = -1.4;
+    //gravX = 0.0;
+    
     // ------------------ gui settings -------------------------------
     gui1.setup();
-        gui1.add(gravedadX.set("gravedad X",0.0,-2.0,2.0));
-        gui1.add(gravedadY.set("gravedad Y",0.0,-2.0,2.0));
+        gui1.add(gravedadX.set("gravedad X",0.f,-2.0,2.0));
+        gui1.add(gravedadY.set("gravedad Y",gY,-2.0,2.0));
         gui1.add(blur.set("blur",0.5,0.0,2.0));
         gui1.add(random.set("random",0.2, 0.0, 1.0));
         gui1.add(minimo.set("min",45, 0, 255));
@@ -180,10 +182,12 @@ void ofApp::update(){
     }
 #endif
     
-    if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
-    gravX=gravedadX;
-    if (gravY!=gravedadY) box2d.setGravity(gravX,gravedadY);
-    gravY=gravedadY;
+    /*if (gravX!=gravedadX) box2d.setGravity(gravedadX,gravY);
+    gravX=gravedadX;*/
+    if (gravedadY!=gY) {
+        box2d.setGravity(gravedadX,gravedadY);
+        gY=gravedadY;
+    }
     
     
     morphogenesis(micelio_player_1);
@@ -222,43 +226,52 @@ void ofApp::update(){
 
 void ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player) {
     
-    int size = micelio_player.size();
-    for (int i=0;i<size;i++) {
-        ofVec2f bump;                                       // creamos vector 2f para bump
-        bump.set(ofRandom(-1,1),ofRandom(-1,1));            // vector random
-        bump *= random;                                     // multiplicamos for factor random
-        bump += micelio_player[i]->getVelocity();           // sumamos velocidad de hifa[i]
-        bump.normalize();                                   // normaliza
+    bool borra_micelio = false;                                 // flag para limpiar micelio al fin del loop
+    int size = micelio_player.size();                           // asignamos tamaño antes del loop ya que lo modificaremos
+    
+    if (size) {                                                 // si el micelio tiene hifas ejecuta el loop
         
-        if (size<50) micelio_player[i]->setVelocity(bump.x,bump.y);      // asignamos a velocidad de hifa[i]
-        else micelio_player[i]->setVelocity(0,0);
-        
-        //micelio_player_1[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
-        
-       if (size<50) {
-            if (ofRandom(0,1)<0.001) {
-                int alf;
-                auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
-                nueva->setRadius(micelio_player[i]->getRadius());
-               // alf=micelio_player[i]->color.a-30;
-                //nueva->color.set(255,255,255,alf);
-                micelio_player.push_back(nueva);
+        for (int i=0;i<size;i++) {
+            ofVec2f bump;                                       // creamos vector 2f temporal para bump
+            bump.set(ofRandom(-1,1),ofRandom(-1,1));            // le asignamos valores random
+            bump *= random;                                     // multiplicamos for factor random
+            bump += micelio_player[i]->getVelocity();           // sumamos velocidad de hifa[i]
+            bump.normalize();                                   // normaliza
+            
+            if (size<100)   {                                   // si es menor al máximo de hifas
+                micelio_player[i]->setVelocity(bump.x,bump.y);  //
+                micelio_player[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
+                
+                if (ofRandom(0,1)<0.003) {                      // factor de mitosis
+                    auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
+                    nueva->setRadius(micelio_player[i]->getRadius());
+                    micelio_player.push_back(nueva);
+                }
+            }
+            else {
+                borra_micelio = true;
             }
         }
+        
+        if (borra_micelio) micelio_player.clear();
     }
-    
+}
+   
+       
+        
+
+        
+   
     /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
      float minDis = ofGetMousePressed() ? 300 : 200;
      
          for(auto &circle : micelio_player_1) {
          float dis = mouse.distance(circle->getPosition());
          
-        
              circle->addAttractionPoint(mouse.x,mouse.y, 0.0006);
              
      }*/
     
-}
 
 void ofApp::draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) {
     for (auto &particle : micelio_player) {
@@ -507,6 +520,7 @@ void ofApp::draw(){
 #endif
         ofDrawBitmapString("key: "+ ofToString(modo),0,90);
         ofDrawBitmapString("PIP: "+ ofToString(nip),0,100);
+        ofDrawBitmapString("gY: "+ ofToString(gravedadY),0,110);
         ofPopMatrix();
     }
     
@@ -644,7 +658,7 @@ void ofApp::keyPressed(int key){
         for (int i=0;i<8;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
             //particle->addAttractionPoint(0,0,10);
-            particle->setRadius(0.5);
+            particle->setRadius(0.4);
             particle->color.set(255,255,255,255);
             micelio_player_1.push_back(particle);
             
@@ -655,7 +669,7 @@ void ofApp::keyPressed(int key){
         //ofSetBackgroundAuto(false);
         for (int i=0;i<4;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
-            particle->setRadius(1);
+            particle->setRadius(0.4);
             micelio_player_2.push_back(particle);
         }
     }
@@ -664,7 +678,7 @@ void ofApp::keyPressed(int key){
         //ofSetBackgroundAuto(false);
         for (int i=0;i<10;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
-            particle->setRadius(1);
+            particle->setRadius(0.4);
             micelio_player_3.push_back(particle);
         }
     }
@@ -673,7 +687,7 @@ void ofApp::keyPressed(int key){
         if(key == ' ') {
             ofstream f;
             f.clear();
-            f.open(ofToDataPath("lines.txt").c_str());
+            f.open(ofToDataPath("lines_.txt").c_str());
             for (int i=0; i<lines.size(); i++) {
                 for (int j=0; j<lines[i].size(); j++) {
                     float x = lines[i][j].x;

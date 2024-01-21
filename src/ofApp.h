@@ -9,7 +9,7 @@
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 
-#define KINECT
+//#define KINECT
 
 
 
@@ -98,7 +98,7 @@ class ofApp : public ofBaseApp{
     int fb_x,fb_y,offset_fb_y;
     ofxImageSequence shrooms;
     
-    float gravX, gravY;
+    float gY;
     
    
     bool vsync,lineas,info,gui,kontorno,tracker,color_fondo;
