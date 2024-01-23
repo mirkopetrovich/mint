@@ -7,8 +7,8 @@ using namespace cv;
 void ofApp::setup(){
     
     // llenamos el buffer de player_1
-     glm::vec2 lp1(0,0);
-     for (int i=0; i<20; i++) avg.push_back(lp1);
+    
+     for (int i=0; i<20; i++) avg.push_back(0);
 
     
     teta = 0;
@@ -21,9 +21,7 @@ void ofApp::setup(){
 
 #ifdef KINECT
     kinect.setRegistration(true);
-    kinect.init();
-    //kinect.init(true); // shows infrared instead of RGB video image
-    //kinect.init(false, false); // disable video image (faster fps)
+    kinect.init(false,false,true);
     kinect.open();
     if (kinect.isConnected()) {
         ofLogNotice() << "kinect: " << kinect.getWidth() << "x" << kinect.getHeight();
@@ -55,7 +53,7 @@ void ofApp::setup(){
     box2d.registerGrabbing();
     
     box2d_esporas.init();
-    box2d_esporas.setGravity(0.0,5.);
+    box2d_esporas.setGravity(0.0,1.);
     box2d_esporas.registerGrabbing();
     
     
@@ -69,15 +67,15 @@ void ofApp::setup(){
     gui1.setup();
         gui1.add(gravedadX.set("gravedad X",0.f,-2.0,2.0));
         gui1.add(gravedadY.set("gravedad Y",gY,-2.0,2.0));
-        gui1.add(blur.set("blur",0.5,0.0,2.0));
+        gui1.add(blur.set("blur",0.48,0.0,2.0));
         gui1.add(random.set("random",0.2, 0.0, 1.0));
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
         gui1.add(altura_micelio.set("altura micelio",-223, -250, 100));
-        gui1.add(cerca_1.set("umbral cerca 1",240, 50, 255)); //UMBRAL SALA
-        gui1.add(lejos_1.set("umbral lejos 1",20, 0, 150));   //UMBRAL SALA
-        gui1.add(cerca_2.set("umbral cerca 2",20, 50, 255));
-        gui1.add(lejos_2.set("umbral lejos 2",0, 0, 150));
+        gui1.add(cerca.set("umbral cerca",240, 50, 255)); //UMBRAL SALA
+        gui1.add(lejos.set("umbral lejos",20, 0, 150));   //UMBRAL SALA
+      // gui1.add(cerca_2.set("umbral cerca 2",20, 50, 255));
+      //  gui1.add(lejos_2.set("umbral lejos 2",0, 0, 150));
         
         
         gui2.setup("player 1");
@@ -126,7 +124,7 @@ void ofApp::update(){
     
     if ((frame_shroom<29) && (play_shroom)) frame_shroom++;
     
-    glm::vec2 mouse(mouseX,mouseY);
+   /* glm::vec2 mouse(mouseX,mouseY);
     avg.pop_front();
     avg.push_back(mouse);
     glm::vec2 pl_1;
@@ -134,44 +132,36 @@ void ofApp::update(){
     for (int i=0; i<tam ; i++) pl_1 +=avg[i];
     pl_1 = pl_1/tam;
     m1.x=pl_1.x;
-    m1.y=pl_1.y;
+    m1.y=pl_1.y;*/
+    
+    
+   // mx_promedio = smooth(mouseX);
    
     
 #ifdef KINECT
     kinect.update();
     
     if (kinect.isFrameNew()) {
-        mirror.setFromPixels(kinect.getDepthPixels());
-        mirror_kinect.setFromPixels(kinect.getPixels());
-        mirror.mirror(0,1);
-        mirror_kinect.mirror(0,1);
-        grayImage = mirror;
-        grayImage2 = mirror;
+        grayImage.setFromPixels(kinect.getDepthPixels());
+        grayImage.mirror(0,1);
         grayThreshNear = grayImage;
         grayThreshFar = grayImage;
-        grayThreshNear.threshold(cerca_1, true);
-        grayThreshFar.threshold(lejos_1);
+        grayThreshNear.threshold(cerca, true);
+        grayThreshFar.threshold(lejos);
         cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-        
-        grayThreshNear2 = grayImage2;
-        grayThreshFar2 = grayImage2;
-        grayThreshNear2.threshold(cerca_2, true);
-        grayThreshFar2.threshold(lejos_2);
-        cvAnd(grayThreshNear2.getCvImage(), grayThreshFar2.getCvImage(), grayImage2.getCvImage(), NULL);
-        
-       /*grayImage.erode_3x3();
+       /* grayImage.blur(mouseY/100);
+        grayImage.erode_3x3();
         grayImage.erode_3x3();
         grayImage.dilate_3x3();*/
-      
-        //grayImage.blur(mouseY/100);
-        grayImage.contrastStretch();
-
+       
+       // grayImage.contrastStretch();
         contourFinder.setMinAreaRadius(minimo);
         contourFinder.setMaxAreaRadius(maximo);
         contourFinder.setThreshold(0);
         contourFinder.findContours(grayImage);
         contourFinder.setFindHoles(false);
-        contourFinder.setSimplify(true);
+        contourFinder.setSimplify(false);
+      
     }
 #endif
     
@@ -194,7 +184,7 @@ void ofApp::update(){
     
     for(auto &box : esporas) {
         float dis = mouse2.distance(box->getPosition());
-        if(dis < minDis) box->addRepulsionForce(mouse, ofRandom(5.));
+        if(dis < minDis) box->addRepulsionForce(mouse2, ofRandom(5.));
         //box->addAttractionPoint(mouse, 1.0);
     }
     
@@ -331,6 +321,18 @@ int ofApp::esporulacion(vector<shared_ptr<CustomParticle>> &esporas, int lifetim
              circle->addAttractionPoint(mouse.x,mouse.y, 0.0006);
              
      }*/
+
+int ofApp::smooth(int valor) {
+    
+    avg.pop_front();
+    avg.push_back(valor);
+    int promedio;
+    int tam = avg.size();
+    for (int i=0; i<tam ; i++) promedio+=avg[i];
+    promedio = promedio/tam;
+    return (promedio);
+    
+}
     
 
 void ofApp::draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) {
@@ -485,9 +487,6 @@ void ofApp::draw(){
 
 #ifdef KINECT
     
-    
-    if (tracker) grayImage.draw(0,900,1920,300);
-    
     if (kontorno) {
         ofPushMatrix();
         ofTranslate(160,0);
@@ -501,24 +500,66 @@ void ofApp::draw(){
         int n = contourFinder.size();
         for (int i=0; i <n; i++) {
             /*ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
-            convexHull.draw();
-            ofSetHexColor(0xFF00FF);
+             convexHull.draw();
+             ofSetHexColor(0xFF00FF);
+             ofFill();
+             for (int i=0;i<int(convexHull.size());i++) {
+             ofDrawCircle(convexHull.getVertices()[i].x,convexHull.getVertices()[i].y,7);
+             }
+             
+             // defects of the convex hull
+             vector<cv::Vec4i> defects = contourFinder.getConvexityDefects(i);
+             ofSetHexColor(0xFFFF00);
+             for(int j = 0; j < defects.size(); j++) {
+             ofDrawLine(defects[j][0], defects[j][1], defects[j][2], defects[j][3]);
+             }*/
+        }
+        if (contourFinder.size()==1) {
+            centroid1 = toOf(contourFinder.getCentroid(0));
             ofFill();
-            for (int i=0;i<int(convexHull.size());i++) {
-                ofDrawCircle(convexHull.getVertices()[i].x,convexHull.getVertices()[i].y,7);
-                }
-            
-            // defects of the convex hull
-            vector<cv::Vec4i> defects = contourFinder.getConvexityDefects(i);
-            ofSetHexColor(0xFFFF00);
-            for(int j = 0; j < defects.size(); j++) {
-                ofDrawLine(defects[j][0], defects[j][1], defects[j][2], defects[j][3]);
-            }*/
-            
-         
-            ofVec2f centroid = toOf(contourFinder.getCentroid(i));
             ofSetColor(cyanPrint);
-            ofDrawCircle(centroid, 15);
+            ofDrawCircle(centroid1.x,240, 10);
+            ofSetColor(255);
+            ofDrawBitmapString("player 1",centroid1.x-20,240);
+        }
+        
+        if (contourFinder.size()==2) {
+            centroid1 = toOf(contourFinder.getCentroid(0));
+            ofFill();
+            ofSetColor(cyanPrint);
+            ofDrawCircle(centroid1.x,240, 10);
+            ofSetColor(255);
+            ofDrawBitmapString("player 1",centroid1.x-20,240);
+            centroid2 = toOf(contourFinder.getCentroid(1));
+            ofSetColor(magentaPrint);
+            ofDrawCircle(centroid2.x,240, 10);
+            ofSetColor(255);
+            ofDrawBitmapString("player 2",centroid2.x-20,240);
+        }
+        
+        if (contourFinder.size()==3) {
+            centroid1 = toOf(contourFinder.getCentroid(0));
+            ofFill();
+            ofSetColor(cyanPrint);
+            ofDrawCircle(centroid1.x,240, 10);
+            ofSetColor(255);
+            ofDrawBitmapString("player 1",centroid1.x-20,240);
+            centroid2 = toOf(contourFinder.getCentroid(1));
+            ofSetColor(magentaPrint);
+            ofDrawCircle(centroid2.x,240, 10);
+            ofSetColor(255);
+            ofDrawBitmapString("player 2",centroid2.x-20,240);
+            centroid3 = toOf(contourFinder.getCentroid(2));
+            ofSetColor(yellowPrint);
+            ofDrawCircle(centroid3.x,240, 10);
+            ofSetColor(255);
+            ofDrawBitmapString("player 3",centroid3.x-20,240);
+        }
+        
+        
+        
+        
+        
             /*ofSetColor(yellowPrint);
             ofDrawBitmapString(ofToString(i),centroid);
         
@@ -530,7 +571,7 @@ void ofApp::draw(){
             ofSetHexColor(0xFF0000);
             ofDrawLine(0, 0, balance.x, balance.y);
             ofPopMatrix();*/
-        }
+        
         ofPopMatrix();
     
     }
@@ -547,20 +588,7 @@ void ofApp::draw(){
         }
         ofPushMatrix();
         ofTranslate(posk);
-        switch(nip) {
-            case 0:
-                mirror_kinect.draw(0,0,tamk.x,tamk.y);
-                break;
-            case 1:
-                mirror.draw(0,0,tamk.x,tamk.y);
-                break;
-            case 2:
-                grayImage.draw(0,0,tamk.x,tamk.y);
-                break;
-            case 3:
-                grayImage2.draw(0,0,tamk.x,tamk.y);
-                break;
-        }
+        grayImage.draw(0,0,tamk.x,tamk.y);
         ofPopMatrix();
         ofSetColor(255);
     }
@@ -581,7 +609,7 @@ void ofApp::draw(){
         ofDrawBitmapString("Kinect H: "+ ofToString(kinect.getHeight()),0,80);
 #endif
         ofDrawBitmapString("key: "+ ofToString(modo),0,90);
-        ofDrawBitmapString("PIP: "+ ofToString(nip),0,100);
+       //ofDrawBitmapString("CX: "+ ofToString(centroid.x),0,100);
         ofDrawBitmapString("gY: "+ ofToString(gravedadY),0,110);
         ofDrawBitmapString("TEST: "+ ofToString(teta),0,120);
         ofPopMatrix();
@@ -595,11 +623,13 @@ void ofApp::draw(){
     ofNoFill();
     ofSetHexColor(0xEE00CC);
     ofDrawCircle(punto.x,punto.y+offset_fb_y,20);
+    //ofDrawCircle(mx_promedio,offset_fb_y,20);
     ofSetHexColor(0xFFFFFF);
     
     
     
-    if (play_shroom) shrooms.getFrame(frame_shroom)->draw(punto.x-48,punto.y+offset_fb_y-165,100,150);
+    if (play_shroom)
+        shrooms.getFrame(frame_shroom)->draw(punto.x-48,mouseY,100,150);//shrooms.getFrame(frame_shroom)->draw(punto.x-48,punto.y+offset_fb_y-165,100,150);
     //polycallampa.draw();
     
     if (gui) {
@@ -680,17 +710,14 @@ void ofApp::keyPressed(int key){
     
     if (key>47 && key<58) modo=key-48;
     if (key == 'y') play_shroom=true;
-    if (key == 't') tracker=!tracker ;
     if (key == 'k') kontorno=!kontorno ;
     if (key == 'g') gui=!gui ;
     if (key == 'i') info=!info ;
     if (key == 'l') lineas=!lineas ;
     if (key == 'f') ofToggleFullscreen();
     if (key == 'q') color_fondo=!color_fondo;
-    if (key == 'o') {
-        nip++;
-        nip%=4;
-    }
+    if (key == 'o') silueta=!silueta;
+    if (key == 't') simpli=!simpli;
     if (key == 'p') {
         pip++;
         pip%=3;
@@ -741,7 +768,7 @@ void ofApp::keyPressed(int key){
         //ofSetBackgroundAuto(false);
         for (int i=0;i<10;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
-            particle->setRadius(0.4);
+            particle->setRadius(0.3);
             particle->color.set(255,255,255,255);
             micelio_player_1.push_back(particle);
             
@@ -750,18 +777,18 @@ void ofApp::keyPressed(int key){
     
     if(key == 'x') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<4;i++) {
+        for (int i=0;i<5;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
-            particle->setRadius(0.4);
+            particle->setRadius(0.3);
             micelio_player_2.push_back(particle);
         }
     }
     
     if(key == 'c') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<10;i++) {
+        for (int i=0;i<3;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
-            particle->setRadius(0.4);
+            particle->setRadius(0.3);
             micelio_player_3.push_back(particle);
         }
     }
@@ -770,7 +797,7 @@ if(key == 'v') {
     //ofSetBackgroundAuto(false);
     for (int i=0;i<50;i++) {
         auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), mouseX ,mouseY);
-        particle->setRadius(0.1);
+        particle->setRadius(0.05);
         esporas.push_back(particle);
     }
 }

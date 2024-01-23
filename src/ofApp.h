@@ -9,7 +9,7 @@
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 
-//#define KINECT
+#define KINECT
 
 
 
@@ -64,6 +64,7 @@ class ofApp : public ofBaseApp{
     int esporulacion(vector <shared_ptr<CustomParticle>> &esporas, int lifetime) ;
     void draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) ;
     void carga_lineas();
+    int smooth(int valor);
     
    
     ofShader shaderX, shaderY;
@@ -90,7 +91,7 @@ class ofApp : public ofBaseApp{
     ofParameter<int> fade1,fade2,fade3;
     ofParameter<float> tamano1,tamano2,tamano3;
     ofParameter<int> minimo,maximo,altura_micelio;
-    ofParameter<int> cerca_1,lejos_1,cerca_2,lejos_2;
+    ofParameter<int> cerca,lejos;
     ofParameter<int> frame_shroom;
     
     ofxSvg svg;
@@ -98,35 +99,40 @@ class ofApp : public ofBaseApp{
     ofPolyline polycallampa;
     int altura;
     int modo;
-    int nip,pip; //vis Kinect
+    int pip; //vis Kinect
     int fb_x,fb_y,offset_fb_y;
     ofxImageSequence shrooms;
     
     float gY;
     
    
-    bool vsync,lineas,info,gui,kontorno,tracker,color_fondo;
+    bool vsync,lineas,info,gui,kontorno,color_fondo,silueta,simpli;
     
 #ifdef KINECT
     ofxKinect kinect;
-    ofxCvColorImage mirror_kinect;
+  //  ofxCvColorImage mirror_kinect;
     ofxCvGrayscaleImage mirror;
     ofxCvGrayscaleImage grayImage;        // grayscale depth image
     ofxCvGrayscaleImage grayThreshNear;   // the near thresholded image
     ofxCvGrayscaleImage grayThreshFar;    // the far thresholded image
-    ofxCvGrayscaleImage grayImage2;       // grayscale depth image
-    ofxCvGrayscaleImage grayThreshNear2;  // the near thresholded image
-    ofxCvGrayscaleImage grayThreshFar2;   // the far thresholded image
+  //  ofxCvGrayscaleImage grayImage2;       // grayscale depth image
+  //  ofxCvGrayscaleImage grayThreshNear2;  // the near thresholded image
+  //  ofxCvGrayscaleImage grayThreshFar2;   // the far thresholded image
     ofxCv::ContourFinder contourFinder;
+    ofVec2f centroid1,centroid2,centroid3;
+    
+    
 #endif
 
-    deque <glm::vec2> avg;
+    deque <int> avg;
     glm::vec2 m1;
     int mx,my;
     int mxx,myy;
     int tet, teta;
     
     bool play_shroom;
+    
+    int centroid_smooth;
   
     
 };
