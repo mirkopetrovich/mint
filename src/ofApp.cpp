@@ -53,6 +53,15 @@ void ofApp::setup(){
     //box2d.checkBounds(true);
     //box2d.setFPS(60.0);
     box2d.registerGrabbing();
+    
+    box2d_esporas.init();
+    box2d_esporas.setGravity(0.0,5.);
+    box2d_esporas.registerGrabbing();
+    
+    
+    
+    
+    
     // -------------------------------------------------------
     //gravX = 0.0;
     
@@ -86,6 +95,11 @@ void ofApp::setup(){
         gui4.setPosition(660,10);
         gui4.add(fade3.set("fade",255, 0, 255));
         gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));
+    
+        gui5.setup("shroom");
+        gui5.setPosition(880,10);
+        gui5.add(frame_shroom.set("frame",0, 0, 29));
+
     // ----------------------------------------------------------------
     fb_x = 1920;
     fb_y = 720;
@@ -109,6 +123,8 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    if ((frame_shroom<29) && (play_shroom)) frame_shroom++;
     
     glm::vec2 mouse(mouseX,mouseY);
     avg.pop_front();
@@ -171,9 +187,24 @@ void ofApp::update(){
     if (tet) teta = 1;
     morphogenesis(micelio_player_2,100);
     morphogenesis(micelio_player_3,50);
-    morphogenesis(esporas,500);
+    esporulacion(esporas,5000);
+    
+    ofVec2f mouse2(ofGetMouseX(), ofGetMouseY());
+    float minDis = 50;
+    
+    for(auto &box : esporas) {
+        float dis = mouse2.distance(box->getPosition());
+        if(dis < minDis) box->addRepulsionForce(mouse, ofRandom(5.));
+        //box->addAttractionPoint(mouse, 1.0);
+    }
+    
+   
+    
+    
+    
 
     box2d.update();
+    box2d_esporas.update();
    
     ofRemove(micelio_player_1, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_2, ofxBox2dBaseShape::shouldRemoveOffScreen);
@@ -248,7 +279,45 @@ int ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player, int
     return(ret);
 }
    
-       
+int ofApp::esporulacion(vector<shared_ptr<CustomParticle>> &esporas, int lifetime) {
+    
+    int ret= 0;
+    bool borra_esporas = false;                                 // flag para limpiar micelio al fin del loop
+    int size = esporas.size();                           // asignamos tamaño antes del loop ya que lo modificaremos
+    
+    if (size) {                                                 // si el micelio tiene hifas ejecuta el loop
+        
+        for (int i=0;i<size;i++) {
+            ofVec2f bump;                                       // creamos vector 2f temporal para bump
+            bump.set(ofRandom(-1,1),ofRandom(-1,1));            // le asignamos valores random
+            bump *= random;                                     // multiplicamos for factor random
+            bump += esporas[i]->getVelocity();           // sumamos velocidad de hifa[i]
+            bump.normalize();                                   // normaliza
+            
+            if (size<lifetime)   {                                   // si es menor al máximo de hifas
+                esporas[i]->setVelocity(bump.x,bump.y);  //
+                
+              
+                 //   esporas[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.01);
+            
+                
+              /*  if (ofRandom(0,1)<0.003) {                      // factor de mitosis
+                    auto nueva = make_shared<CustomParticle>(box2d.getWorld(), esporas[i]->getPosition().x,esporas[i]->getPosition().y);
+                    nueva->setRadius(esporas[i]->getRadius());
+                    esporas.push_back(nueva);
+                }*/
+            }
+            else {
+                borra_esporas = true;
+                ret = 1;
+            }
+        }
+        
+        if (borra_esporas) esporas.clear();
+        
+    }
+    return(ret);
+}
         
 
         
@@ -517,20 +586,28 @@ void ofApp::draw(){
         ofDrawBitmapString("TEST: "+ ofToString(teta),0,120);
         ofPopMatrix();
     }
-    ofNoFill();
-    ofDrawCircle(m1.x,800,20);
     
-    float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
+    
+    //float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
     ofVec2f punto(0,0);
     if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
-    shrooms.getFrameAtPercent(percent)->draw(punto.x,punto.y-220+688,100,150);
-    polycallampa.draw();
+    
+    ofNoFill();
+    ofSetHexColor(0xEE00CC);
+    ofDrawCircle(punto.x,punto.y+offset_fb_y,20);
+    ofSetHexColor(0xFFFFFF);
+    
+    
+    
+    if (play_shroom) shrooms.getFrame(frame_shroom)->draw(punto.x-48,punto.y+offset_fb_y-165,100,150);
+    //polycallampa.draw();
     
     if (gui) {
         gui1.draw();
         gui2.draw();
         gui3.draw();
         gui4.draw();
+        gui5.draw();
     }
 }
 
@@ -602,6 +679,7 @@ void ofApp::keyPressed(int key){
     
     
     if (key>47 && key<58) modo=key-48;
+    if (key == 'y') play_shroom=true;
     if (key == 't') tracker=!tracker ;
     if (key == 'k') kontorno=!kontorno ;
     if (key == 'g') gui=!gui ;
@@ -661,7 +739,7 @@ void ofApp::keyPressed(int key){
     
     if(key == 'z') {
         //ofSetBackgroundAuto(false);
-        for (int i=0;i<80;i++) {
+        for (int i=0;i<10;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
             particle->setRadius(0.4);
             particle->color.set(255,255,255,255);
@@ -690,8 +768,8 @@ void ofApp::keyPressed(int key){
     
 if(key == 'v') {
     //ofSetBackgroundAuto(false);
-    for (int i=0;i<100;i++) {
-        auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY);
+    for (int i=0;i<50;i++) {
+        auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), mouseX ,mouseY);
         particle->setRadius(0.1);
         esporas.push_back(particle);
     }

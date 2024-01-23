@@ -61,6 +61,7 @@ class ofApp : public ofBaseApp{
    
     void allocate_fb();
     int morphogenesis(vector <shared_ptr<CustomParticle>> &micelio_player, int lifetime) ;
+    int esporulacion(vector <shared_ptr<CustomParticle>> &esporas, int lifetime) ;
     void draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) ;
     void carga_lineas();
     
@@ -70,6 +71,7 @@ class ofApp : public ofBaseApp{
     ofImage fondo_1,fondo_2,fondo_3,fondo_4;
     
     ofxBox2d box2d;
+    ofxBox2d box2d_esporas;
     
     vector    <shared_ptr<CustomParticle>> micelio_player_1;
     vector    <shared_ptr<CustomParticle>> micelio_player_2;
@@ -81,7 +83,7 @@ class ofApp : public ofBaseApp{
     
     ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3, fb_esporas;
     
-    ofxPanel gui1, gui2, gui3, gui4;
+    ofxPanel gui1, gui2, gui3, gui4, gui5;
     
 
     ofParameter<float> random, blur, gravedadX, gravedadY;
@@ -89,6 +91,7 @@ class ofApp : public ofBaseApp{
     ofParameter<float> tamano1,tamano2,tamano3;
     ofParameter<int> minimo,maximo,altura_micelio;
     ofParameter<int> cerca_1,lejos_1,cerca_2,lejos_2;
+    ofParameter<int> frame_shroom;
     
     ofxSvg svg;
     vector<ofPath> paths;
@@ -122,6 +125,8 @@ class ofApp : public ofBaseApp{
     int mx,my;
     int mxx,myy;
     int tet, teta;
+    
+    bool play_shroom;
   
     
 };
