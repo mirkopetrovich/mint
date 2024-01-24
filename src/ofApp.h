@@ -35,6 +35,10 @@ public:
         ofDrawCircle(0, 0, radius);
         ofPopMatrix();
     }
+    
+    static bool shouldRemoveEsporas(shared_ptr<ofxBox2dBaseShape> shape) {
+        return !ofRectangle(0, 0, ofGetWidth(), 600).inside(shape.get()->getPosition());
+    }
 };
 
 class ofApp : public ofBaseApp{
@@ -65,7 +69,7 @@ class ofApp : public ofBaseApp{
     void draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) ;
     void carga_lineas();
     int smooth(int valor);
-    
+   
    
     ofShader shaderX, shaderY;
     
@@ -79,6 +83,9 @@ class ofApp : public ofBaseApp{
     vector    <shared_ptr<CustomParticle>> micelio_player_3;
     vector    <shared_ptr<CustomParticle>> esporas;
     vector    <shared_ptr<ofxBox2dEdge>>    edges;
+   // vector    <shared_ptr<ofxBox2dEdge>>    edges_esporas;
+    
+    
     vector    <ofPolyline>                  lines;
     
     

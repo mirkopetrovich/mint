@@ -55,6 +55,8 @@ void ofApp::setup(){
     box2d_esporas.init();
     box2d_esporas.setGravity(0.0,1.);
     box2d_esporas.registerGrabbing();
+    box2d_esporas.createGround(0,0, 1921,300);
+    box2d_esporas.checkBounds(true);
     
     
     
@@ -188,6 +190,12 @@ void ofApp::update(){
         //box->addAttractionPoint(mouse, 1.0);
     }
     
+  /*  for(auto &box : micelio_player_1) {
+        float dis = mouse2.distance(box->getPosition());
+        box->addAttractionPoint(mouse2.x,mouse2.y-offset_fb_y, ofRandom(0.001));
+        //box->addAttractionPoint(mouse, 1.0);
+    }*/
+    
    
     
     
@@ -199,7 +207,7 @@ void ofApp::update(){
     ofRemove(micelio_player_1, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_2, ofxBox2dBaseShape::shouldRemoveOffScreen);
     ofRemove(micelio_player_3, ofxBox2dBaseShape::shouldRemoveOffScreen);
-    ofRemove(esporas, ofxBox2dBaseShape::shouldRemoveOffScreen);
+    ofRemove(esporas, CustomParticle::shouldRemoveEsporas);
     
     fb_player_1.begin();
     draw_fb_player(micelio_player_1);
@@ -228,6 +236,8 @@ void ofApp::update(){
 
     
 }
+
+
 
 int ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player, int lifetime) {
     
@@ -357,15 +367,21 @@ void ofApp::carga_lineas() {
             vector <string> pts = ofSplitString(strLines[i], ",");
             if(pts.size() > 0) {
                 auto edge = make_shared<ofxBox2dEdge>();
+               // auto edge2 = make_shared<ofxBox2dEdge>();
                 for (int j=0; j<pts.size(); j+=2) {
                     if(pts[j].size() > 0) {
                         float x = ofToFloat(pts[j]);
                         float y = ofToFloat(pts[j+1]);
                         edge->addVertex(x, y-offset_fb_y);
+                      //  edge2->addVertex(x, y);
+                        
                     }
                 }
                 edge->create(box2d.getWorld());
+               // edge2->create(box2d_esporas.getWorld());
+                
                 edges.push_back(edge);
+               // edges_esporas.push_back(edge2);
             }
         }
 }
@@ -404,6 +420,10 @@ void ofApp::draw(){
             edge->draw();
             ofPopMatrix();
         }
+        
+       /* for (auto & edge : edges_esporas) {
+            edge->draw();
+        }*/
     }
 
 
