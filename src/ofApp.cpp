@@ -55,8 +55,8 @@ void ofApp::setup(){
     box2d_esporas.init();
     box2d_esporas.setGravity(0.0,1.);
     box2d_esporas.registerGrabbing();
-    box2d_esporas.createGround(0,0, 1921,300);
-    box2d_esporas.checkBounds(true);
+    //box2d_esporas.createGround(0,0, 1921,300);
+   // box2d_esporas.checkBounds(true);
     
     
     
@@ -97,8 +97,9 @@ void ofApp::setup(){
         gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));
     
         gui5.setup("shroom");
+        gui5.add(fade_esporomas.set("fade",255, 0, 255));
         gui5.setPosition(880,10);
-        gui5.add(frame_shroom.set("frame",0, 0, 29));
+      
 
     // ----------------------------------------------------------------
     fb_x = 1920;
@@ -113,9 +114,22 @@ void ofApp::setup(){
     }
     
     //--------------------------------------------------
-    shrooms.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
-    shrooms.preloadAllFrames();    //this way there is no stutter when loading frames
-    shrooms.setFrameRate(30);
+    Amanita.loadSequence("Amanita/Amanita-", "png", 1, 30, 2);
+    Amanita.preloadAllFrames();
+    Amanita.setFrameRate(1);
+    
+    Cortinarius.loadSequence("Cortinarius/Cortinarius-", "png", 1, 30, 2);
+    Cortinarius.preloadAllFrames();
+    Cortinarius.setFrameRate(1);
+    
+    Cortinariusx3.loadSequence("Cortinariusx3/3Cortinarius-", "png", 1, 30, 2);
+    Cortinariusx3.preloadAllFrames();
+    Cortinariusx3.setFrameRate(1);
+    
+    
+    
+    
+    
     //---------------------------------------------------
     
     carga_lineas(); // líneas horizonte guardadas en bin/data/lines.txt
@@ -124,7 +138,16 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    if ((frame_shroom<29) && (play_shroom)) frame_shroom++;
+    if ((f_shroom<58) && (play_shroom)){
+        f_shroom++;
+        if (!esporoma_status) esporoma_status = true;
+    }
+    else {
+        if (esporoma_status) {
+            esporula(punto);
+            esporoma_status = false;
+        }
+    }
     
    /* glm::vec2 mouse(mouseX,mouseY);
     avg.pop_front();
@@ -332,6 +355,14 @@ int ofApp::esporulacion(vector<shared_ptr<CustomParticle>> &esporas, int lifetim
              
      }*/
 
+void ofApp::esporula(ofVec2f punto) {
+    for (int i=0;i<100;i++) {
+        auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), punto.x, punto.y+offset_fb_y-100);
+        particle->setRadius(0.05);
+        esporas.push_back(particle);
+    }
+}
+
 int ofApp::smooth(int valor) {
     
     avg.pop_front();
@@ -492,6 +523,8 @@ void ofApp::draw(){
     
     ofSetColor(255,255,255,255);
     fb_esporas.draw(0,0); // 0,688
+    ofSetColor(255,255,255,fade_esporomas);
+    fb_esporomas.draw(0,0);
     
     ofSetColor(255,255,255,fade1);
     fb_blur_Y1.draw(0,offset_fb_y); // 0,688
@@ -637,8 +670,8 @@ void ofApp::draw(){
     
     
     //float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
-    ofVec2f punto(0,0);
-    if (edges.size()>0) punto=edges[0]->getPointAtPercent(mouseX/1200.);
+    //punto(0,0);
+    if (edges.size()>0) punto=edges[0]->getPointAtPercent(pos_esporoma);
     
     ofNoFill();
     ofSetHexColor(0xEE00CC);
@@ -648,9 +681,8 @@ void ofApp::draw(){
     
     
     
-    if (play_shroom)
-        shrooms.getFrame(frame_shroom)->draw(punto.x-48,mouseY,100,150);//shrooms.getFrame(frame_shroom)->draw(punto.x-48,punto.y+offset_fb_y-165,100,150);
-    //polycallampa.draw();
+    if (play_shroom) callampas(shroom,punto);
+ 
     
     if (gui) {
         gui1.draw();
@@ -661,10 +693,40 @@ void ofApp::draw(){
     }
 }
 
+void ofApp::callampas(int seta, ofVec2f pos) {
+    
+   
+        
+    fb_esporomas.begin();
+    ofClear(0,0,0,0);
+        
+        if (seta==0) {
+            Amanita.getFrame(f_shroom/2)->draw(pos.x-50,pos.y+offset_fb_y-114 ,100,150);
+        }
+        
+        if (seta==1) {
+            Cortinarius.getFrame(f_shroom/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
+        }
+        
+        if (seta==2) {
+            Cortinariusx3.getFrame(f_shroom/2)->draw(pos.x-50,pos.y+offset_fb_y-130,100,150);
+        }
+    
+    
+fb_esporomas.end();
+    
+}
+
+
 void ofApp::allocate_fb(){
     
     
     //  -------------- framebuffer settings -----------------------
+    
+    fb_esporomas.allocate(1920,1200,GL_RGBA);
+    fb_esporomas.begin();
+    ofClear(0,0,0,0);
+    fb_esporomas.end();
     
     fb_esporas.allocate(1920,1200,GL_RGBA);
     fb_esporas.begin();
@@ -729,7 +791,12 @@ void ofApp::keyPressed(int key){
     
     
     if (key>47 && key<58) modo=key-48;
-    if (key == 'y') play_shroom=true;
+    if (key == 'y') {
+        play_shroom=true;
+        f_shroom = 0;
+        shroom = ofRandom(3);
+        pos_esporoma = ofRandom(1);
+    }
     if (key == 'k') kontorno=!kontorno ;
     if (key == 'g') gui=!gui ;
     if (key == 'i') info=!info ;

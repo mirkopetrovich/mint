@@ -69,6 +69,10 @@ class ofApp : public ofBaseApp{
     void draw_fb_player(vector <shared_ptr<CustomParticle>> &micelio_player) ;
     void carga_lineas();
     int smooth(int valor);
+    
+    void callampas(int seta, ofVec2f pos);
+    
+    void esporula(ofVec2f punto);
    
    
     ofShader shaderX, shaderY;
@@ -89,17 +93,17 @@ class ofApp : public ofBaseApp{
     vector    <ofPolyline>                  lines;
     
     
-    ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3, fb_esporas;
+    ofFbo fb_player_1, fb_player_2, fb_player_3, fb_blur_X1, fb_blur_Y1, fb_blur_X2, fb_blur_Y2, fb_blur_X3, fb_blur_Y3, fb_esporas, fb_esporomas;
     
     ofxPanel gui1, gui2, gui3, gui4, gui5;
     
 
     ofParameter<float> random, blur, gravedadX, gravedadY;
-    ofParameter<int> fade1,fade2,fade3;
+    ofParameter<int> fade1,fade2,fade3,fade_esporomas;
     ofParameter<float> tamano1,tamano2,tamano3;
     ofParameter<int> minimo,maximo,altura_micelio;
     ofParameter<int> cerca,lejos;
-    ofParameter<int> frame_shroom;
+    
     
     ofxSvg svg;
     vector<ofPath> paths;
@@ -108,7 +112,12 @@ class ofApp : public ofBaseApp{
     int modo;
     int pip; //vis Kinect
     int fb_x,fb_y,offset_fb_y;
-    ofxImageSequence shrooms;
+    
+    int f_shroom, shroom;
+    float pos_esporoma;
+    ofxImageSequence Amanita;
+    ofxImageSequence Cortinarius;
+    ofxImageSequence Cortinariusx3;
     
     float gY;
     
@@ -138,8 +147,11 @@ class ofApp : public ofBaseApp{
     int tet, teta;
     
     bool play_shroom;
+    bool esporoma_status;
     
     int centroid_smooth;
+    
+    ofVec2f punto;
   
     
 };
