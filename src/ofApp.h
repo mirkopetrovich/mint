@@ -144,12 +144,14 @@ class ofApp : public ofBaseApp{
     glm::vec2 m1;
     int mx,my;
     int mxx,myy;
-    int tet, teta;
+    int tet, tet2, tet3;
     
     bool play_shroom;
     bool esporoma_status;
     
     int centroid_smooth;
+    
+    ofVec2f mano;
     
     ofVec2f punto;
   

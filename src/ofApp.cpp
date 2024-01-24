@@ -11,7 +11,6 @@ void ofApp::setup(){
      for (int i=0; i<20; i++) avg.push_back(0);
 
     
-    teta = 0;
  
     
     ofSetLogLevel(OF_LOG_VERBOSE);
@@ -43,7 +42,7 @@ void ofApp::setup(){
     
     // --------------  box2d settings  ----------------------
     
-    gY = -1.4;
+    gY = 0;
     box2d.init();
     box2d.setGravity(0.0,gY);
     //box2d.createGround(0,50, 1920,50);
@@ -53,7 +52,7 @@ void ofApp::setup(){
     box2d.registerGrabbing();
     
     box2d_esporas.init();
-    box2d_esporas.setGravity(0.0,1.);
+    box2d_esporas.setGravity(0.0,0.0);
     box2d_esporas.registerGrabbing();
     //box2d_esporas.createGround(0,0, 1921,300);
    // box2d_esporas.checkBounds(true);
@@ -69,7 +68,7 @@ void ofApp::setup(){
     gui1.setup();
         gui1.add(gravedadX.set("gravedad X",0.f,-2.0,2.0));
         gui1.add(gravedadY.set("gravedad Y",gY,-2.0,2.0));
-        gui1.add(blur.set("blur",0.48,0.0,2.0));
+        gui1.add(blur.set("blur",0.6,0.0,2.0));
         gui1.add(random.set("random",0.2, 0.0, 1.0));
         gui1.add(minimo.set("min",45, 0, 255));
         gui1.add(maximo.set("max",180, 0, 255));
@@ -198,10 +197,43 @@ void ofApp::update(){
     }
     
     
-    tet = morphogenesis(micelio_player_1,150);
-    if (tet) teta = 1;
-    morphogenesis(micelio_player_2,100);
-    morphogenesis(micelio_player_3,50);
+    tet = morphogenesis(micelio_player_1,100); //100
+    tet2 = morphogenesis(micelio_player_2,100);
+    tet3 = morphogenesis(micelio_player_3,100);
+    
+    if ((tet)&&(contourFinder.size()>0)) {
+        for (int i=0;i<10;i++) {
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), centroid1.x*3. ,600-offset_fb_y); //
+            particle->setRadius(0.3);
+            particle->color.set(255,255,255,255);
+            micelio_player_2.push_back(particle);
+        }
+    }
+    
+    if ((tet2)&&(contourFinder.size()>0)) {
+        for (int i=0;i<10;i++) {
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), centroid1.x*3. ,600-offset_fb_y); //
+            particle->setRadius(0.3);
+            particle->color.set(255,255,255,255);
+            micelio_player_3.push_back(particle);
+        }
+    }
+    
+    if ((tet3)&&(contourFinder.size()>0)) {
+        for (int i=0;i<10;i++) {
+            auto particle = make_shared<CustomParticle>(box2d.getWorld(), centroid1.x*3. ,600-offset_fb_y); //
+            particle->setRadius(0.3);
+            particle->color.set(255,255,255,255);
+            micelio_player_1.push_back(particle);
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
     esporulacion(esporas,5000);
     
     ofVec2f mouse2(ofGetMouseX(), ofGetMouseY());
@@ -280,9 +312,9 @@ int ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player, int
             if (size<lifetime)   {                                   // si es menor al máximo de hifas
                 micelio_player[i]->setVelocity(bump.x,bump.y);  //
                 
-                if (ofRandom(0,1)<0.5) {
+               /* if (ofRandom(0,1)<0.5) {
                     micelio_player[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
-                }
+                }*/
                 
                 if (ofRandom(0,1)<0.003) {                      // factor de mitosis
                     auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
@@ -541,91 +573,43 @@ void ofApp::draw(){
 #ifdef KINECT
     
     if (kontorno) {
-        ofPushMatrix();
-        ofTranslate(160,0);
-        ofScale(2.5);
         
-        //grayImage.draw(0,0);
-        //contourFinder.draw();
-       
-        ofSetHexColor(0xFFFF00);
+       ofSetHexColor(0xFFFF00);
         ofNoFill();
         int n = contourFinder.size();
         for (int i=0; i <n; i++) {
-             ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
-             convexHull.draw();
-             ofSetHexColor(0xFF00FF);
-             ofFill();
-             for (int i=0;i<int(convexHull.size());i++) {
-             ofDrawCircle(convexHull.getVertices()[i].x,convexHull.getVertices()[i].y,7);
-             }
-             
-             // defects of the convex hull
-            /* vector<cv::Vec4i> defects = contourFinder.getConvexityDefects(i);
-             ofSetHexColor(0xFFFF00);
-             for(int j = 0; j < defects.size(); j++) {
-             ofDrawLine(defects[j][0], defects[j][1], defects[j][2], defects[j][3]);
-             }*/
-        }
-        if (contourFinder.size()==1) {
-            centroid1 = toOf(contourFinder.getCentroid(0));
+            ofPolyline convexHull = toOf(contourFinder.getFitQuad(i));
+            convexHull.draw();
+            ofSetHexColor(0xFF00FF);
             ofFill();
-            ofSetColor(cyanPrint);
-            ofDrawCircle(centroid1.x,240, 10);
-            ofSetColor(255);
-            ofDrawBitmapString("player 1",centroid1.x-20,240);
+            /*for (int i=0;i<int(convexHull.size());i++) {
+                ofDrawCircle(convexHull.getVertices()[i].x,convexHull.getVertices()[i].y,2);
+                ofSetColor(255);
+                ofDrawBitmapString(ofToString(i),convexHull.getVertices()[i].x,convexHull.getVertices()[i].y);
+                
+            }*/
+            if (convexHull.size()>0) {
+                //ofDrawCircle(convexHull.getVertices()[0].x,convexHull.getVertices()[0].y,10);
+                mano = convexHull.getVertices()[0];
+                ofDrawCircle(mano.x*3,500,10);
+            }
+            if (contourFinder.size()==1) {
+                centroid1 = toOf(contourFinder.getCentroid(0));
+                ofFill();
+                ofSetHexColor(0xFF0000);
+                ofDrawCircle(centroid1.x*3.,600, 15);
+                ofSetColor(255);
+                ofVec2f balance = toOf(contourFinder.getBalance(0));
+                ofDrawLine(0, 0, balance.x, balance.y);
+                ofDrawBitmapString(ofToString(balance.x),1440,120);
+                ofDrawBitmapString(ofToString(balance.y),1440,140);
+                
+                           
+                
+            }
         }
         
-        if (contourFinder.size()==2) {
-            centroid1 = toOf(contourFinder.getCentroid(0));
-            ofFill();
-            ofSetColor(cyanPrint);
-            ofDrawCircle(centroid1.x,240, 10);
-            ofSetColor(255);
-            ofDrawBitmapString("player 1",centroid1.x-20,240);
-            centroid2 = toOf(contourFinder.getCentroid(1));
-            ofSetColor(magentaPrint);
-            ofDrawCircle(centroid2.x,240, 10);
-            ofSetColor(255);
-            ofDrawBitmapString("player 2",centroid2.x-20,240);
-        }
-        
-        if (contourFinder.size()==3) {
-            centroid1 = toOf(contourFinder.getCentroid(0));
-            ofFill();
-            ofSetColor(cyanPrint);
-            ofDrawCircle(centroid1.x,240, 10);
-            ofSetColor(255);
-            ofDrawBitmapString("player 1",centroid1.x-20,240);
-            centroid2 = toOf(contourFinder.getCentroid(1));
-            ofSetColor(magentaPrint);
-            ofDrawCircle(centroid2.x,240, 10);
-            ofSetColor(255);
-            ofDrawBitmapString("player 2",centroid2.x-20,240);
-            centroid3 = toOf(contourFinder.getCentroid(2));
-            ofSetColor(yellowPrint);
-            ofDrawCircle(centroid3.x,240, 10);
-            ofSetColor(255);
-            ofDrawBitmapString("player 3",centroid3.x-20,240);
-        }
-        
-        
-        
-        
-        
-            /*ofSetColor(yellowPrint);
-            ofDrawBitmapString(ofToString(i),centroid);
-        
-            
-            ofVec2f balance = toOf(contourFinder.getBalance(i));
-            ofPushMatrix();
-            ofTranslate(centroid.x, centroid.y);
-            ofScale(5, 5);
-            ofSetHexColor(0xFF0000);
-            ofDrawLine(0, 0, balance.x, balance.y);
-            ofPopMatrix();*/
-        
-        ofPopMatrix();
+ 
     
     }
     
@@ -664,7 +648,7 @@ void ofApp::draw(){
         ofDrawBitmapString("key: "+ ofToString(modo),0,90);
        //ofDrawBitmapString("CX: "+ ofToString(centroid.x),0,100);
         ofDrawBitmapString("gY: "+ ofToString(gravedadY),0,110);
-        ofDrawBitmapString("TEST: "+ ofToString(teta),0,120);
+        //ofDrawBitmapString("TEST: "+ ofToString(teta),0,120);
         ofPopMatrix();
     }
     
