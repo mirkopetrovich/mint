@@ -52,19 +52,13 @@ class ofApp : public ofBaseApp{
 		void exit() override;
 
 		void keyPressed(int key) override;
-		void keyReleased(int key) override;
-		void mouseMoved(int x, int y ) override;
 		void mouseDragged(int x, int y, int button) override;
 		void mousePressed(int x, int y, int button) override;
 		void mouseReleased(int x, int y, int button) override;
-		void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
-		void mouseEntered(int x, int y) override;
-		void mouseExited(int x, int y) override;
-		void windowResized(int w, int h) override;
-		void dragEvent(ofDragInfo dragInfo) override;
-		void gotMessage(ofMessage msg) override;
+		
     
    
+    void gaussian_blur();
     void allocate_fb();
     int morphogenesis(vector <shared_ptr<CustomParticle>> &micelio_player, int lifetime) ;
     int esporulacion(vector <shared_ptr<CustomParticle>> &esporas, int lifetime) ;
@@ -75,9 +69,16 @@ class ofApp : public ofBaseApp{
     void callampas(int seta, ofVec2f pos);
     
     void esporula(ofVec2f punto);
+    void reporte();
+    void gui_settings();
+    void picture_in_picture();
+    
+    void start_micelio_1();
+    void start_micelio_2();
+    void start_micelio_3();
     
     static bool sort_x(glm::vec2 &a, glm::vec2 &b);
-     static bool sort_y(glm::vec2 &a, glm::vec2 &b);
+    static bool sort_y(glm::vec2 &a, glm::vec2 &b);
    
    
     ofShader shaderX, shaderY;
@@ -92,8 +93,6 @@ class ofApp : public ofBaseApp{
     vector    <shared_ptr<CustomParticle>> micelio_player_3;
     vector    <shared_ptr<CustomParticle>> esporas;
     vector    <shared_ptr<ofxBox2dEdge>>    edges;
-   // vector    <shared_ptr<ofxBox2dEdge>>    edges_esporas;
-    
     
     vector    <ofPolyline>                  lines;
     
@@ -109,14 +108,11 @@ class ofApp : public ofBaseApp{
     ofParameter<int> minimo,maximo,altura_micelio;
     ofParameter<int> cerca,lejos;
     
-    
-    ofxSvg svg;
-    vector<ofPath> paths;
-    ofPolyline polycallampa;
     int altura;
     int modo;
     int pip; //vis Kinect
     int fb_x,fb_y,offset_fb_y;
+    int contador;
     
     int f_shroom, shroom;
     float pos_esporoma;
@@ -126,27 +122,25 @@ class ofApp : public ofBaseApp{
     
     float gY;
     
+    float inicio;
    
-    bool vsync,lineas,info,gui,kontorno,color_fondo,silueta,simpli;
+    bool vsync,lineas,info,gui,kontorno,color_fondo,silueta,simpli,puf, nada, comienzo, fadeout_1;
     
 #ifdef KINECT
     ofxKinect kinect;
-  //  ofxCvColorImage mirror_kinect;
     ofxCvGrayscaleImage mirror;
     ofxCvGrayscaleImage grayImage;        // grayscale depth image
     ofxCvGrayscaleImage grayThreshNear;   // the near thresholded image
     ofxCvGrayscaleImage grayThreshFar;    // the far thresholded image
-  //  ofxCvGrayscaleImage grayImage2;       // grayscale depth image
-  //  ofxCvGrayscaleImage grayThreshNear2;  // the near thresholded image
-  //  ofxCvGrayscaleImage grayThreshFar2;   // the far thresholded image
+
     ofxCv::ContourFinder contourFinder;
     ofVec2f centroid1,centroid2,centroid3;
     
     
 #endif
 
-    deque <int> avg;
-    glm::vec2 m1;
+    deque <glm::vec2> avg,avg2;
+    glm::vec2 m1,m2;
     int mx,my;
     int mxx,myy;
     int tet, tet2, tet3;
@@ -161,6 +155,8 @@ class ofApp : public ofBaseApp{
     ofVec2f punto;
     
     vector<glm::vec2> ord;
+    
+    int players;
   
     
 };
