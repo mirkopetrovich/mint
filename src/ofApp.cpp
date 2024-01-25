@@ -593,6 +593,18 @@ void ofApp::draw(){
                 mano = convexHull.getVertices()[0];
                 ofDrawCircle(mano.x*3,500,10);
             }
+            
+            /* for (int i=0;i<int(convexHull.size());i++) {
+             glm::vec2 ordi(convexHull.getVertices()[i].x,convexHull.getVertices()[i].y);
+             
+             ord.push_back(ordi);
+         }
+         
+         ofSort(ord,&sort_y);
+         ord.pop_back();
+         ord.pop_back();
+         ofSort(ord,&sort_x);*/
+            
             if (contourFinder.size()==1) {
                 centroid1 = toOf(contourFinder.getCentroid(0));
                 ofFill();
@@ -676,6 +688,25 @@ void ofApp::draw(){
         gui5.draw();
     }
 }
+
+bool ofApp::sort_x(glm::vec2 &a, glm::vec2 &b) {
+    if (a.x < b.x){
+         return true;
+     } else {
+         return false;
+     }
+}
+
+bool ofApp::sort_y(glm::vec2 &a, glm::vec2 &b) {
+    if (a.y < b.y){
+         return true;
+     } else {
+         return false;
+     }
+}
+
+
+
 
 void ofApp::callampas(int seta, ofVec2f pos) {
     

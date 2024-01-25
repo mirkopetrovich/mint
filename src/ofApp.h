@@ -39,6 +39,8 @@ public:
     static bool shouldRemoveEsporas(shared_ptr<ofxBox2dBaseShape> shape) {
         return !ofRectangle(0, 0, ofGetWidth(), 600).inside(shape.get()->getPosition());
     }
+    
+    
 };
 
 class ofApp : public ofBaseApp{
@@ -73,6 +75,9 @@ class ofApp : public ofBaseApp{
     void callampas(int seta, ofVec2f pos);
     
     void esporula(ofVec2f punto);
+    
+    static bool sort_x(glm::vec2 &a, glm::vec2 &b);
+     static bool sort_y(glm::vec2 &a, glm::vec2 &b);
    
    
     ofShader shaderX, shaderY;
@@ -154,6 +159,8 @@ class ofApp : public ofBaseApp{
     ofVec2f mano;
     
     ofVec2f punto;
+    
+    vector<glm::vec2> ord;
   
     
 };
