@@ -41,7 +41,7 @@ void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofEnableAntiAliasing();
     ofEnableSmoothing();
-    //ofHideCursor();
+    ofHideCursor();
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -461,13 +461,13 @@ void ofApp::update(){
         contourFinder.setFindHoles(false);
         contourFinder.setSimplify(false);
         
-        //players = contourFinder.size();
+        players = contourFinder.size();
         
       
     }
 #endif
     
-    players = modo;  // cambiar por contourFinder.size
+    //players = modo;  // cambiar por contourFinder.size
     
     if (players<4) {
         if (players!=antiguos) {
@@ -504,7 +504,7 @@ void ofApp::update(){
         if (!players) kill_m1=true;
         else {
             contador_1++;
-            if (contador_1>3) {
+            if (contador_1>2) {
                 stop_m1= true;
                 play_shroom_1=true;
                 f_shroom_1 = 0;
@@ -519,7 +519,7 @@ void ofApp::update(){
         if (!players) kill_m2=true;
         else {
             contador_2++;
-            if (contador_2>2) {
+            if (contador_2>3) {
                 stop_m2= true;
                 play_shroom_2=true;
                 f_shroom_2 = 0;
@@ -711,30 +711,30 @@ void ofApp::draw(){
    
         int n = contourFinder.size();
     
-    if (n) {
-        if (n==2) {
-            centroid1 = toOf(contourFinder.getCentroid(0));
-            centroid2 = toOf(contourFinder.getCentroid(1));
+  //  if (n) {
+        //if (n==2) {
+         //   centroid1 = toOf(contourFinder.getCentroid(0));
+         //   centroid2 = toOf(contourFinder.getCentroid(1));
            // ofFill();
             //ofSetHexColor(0xFF0000);
            // ofDrawCircle(centroid1.x*3.,600, 15);
            // ofDrawCircle(centroid2.x*3.,600, 15);
-        }
+      //  }
         
-        if (n==1) {
-            centroid1 = toOf(contourFinder.getCentroid(0));
-            ofFill();
+     //  if (n==1) {
+       //     centroid1 = toOf(contourFinder.getCentroid(0));
+       //     ofFill();
            // ofSetHexColor(0xFF0000);
            // ofDrawCircle(centroid1.x*3.,600, 15);
-        }
+      //  }
         
-        if (n==3) {
-        }
-        }
+      //  if (n==3) {
+      //  }
+       // }
         
         
         
-    if (n==1) {
+    if (n>0) {
         ofPolyline convexHull = toOf(contourFinder.getFitQuad(0));
         ord.clear();
         for (int i=0;i<int(convexHull.size());i++) {
@@ -770,8 +770,8 @@ void ofApp::draw(){
         
         
         
-        ofDrawCircle(m1,20);
-        ofDrawCircle(m2,20);
+        //ofDrawCircle(m1,20);
+        //ofDrawCircle(m2,20);
     }
             
         
@@ -803,7 +803,7 @@ void ofApp::draw(){
     }
     picture_in_picture();
     reporte();
-    ofDrawBitmapString(ofToString(players),946,275);
+    //ofDrawBitmapString(ofToString(players),1222,72);
 }
 
 bool ofApp::sort_x(glm::vec2 &a, glm::vec2 &b) {
@@ -839,7 +839,7 @@ void ofApp::callampas_1(int seta, ofVec2f pos) {
             Leucocoprinus.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
     }
         if (seta==4) {
-            Morchella.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-90,100,150);
+            Morchella.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
     }
     
 fb_esporomas_1.end();
@@ -902,7 +902,7 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
-    
+    bool flecha = true;
     
     if (key>47 && key<58) modo=key-48;
     if (key == 'y') {
@@ -915,7 +915,10 @@ void ofApp::keyPressed(int key){
     if (key == 'g') gui=!gui ;
     if (key == 'i') info=!info ;
     if (key == 'l') lineas=!lineas ;
-    if (key == 'f') ofToggleFullscreen();
+    if (key == 'f') ofHideCursor();
+    if (key == 'm') ofShowCursor();
+     
+        
     if (key == 'q') color_fondo=!color_fondo;
     if (key == 'o') silueta=!silueta;
     if (key == 't') simpli=!simpli;
