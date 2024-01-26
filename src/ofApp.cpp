@@ -6,9 +6,33 @@ using namespace cv;
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    kontorno = 1;
     nada = true ;
     comienzo = false;
+    modo = 0;
+    antiguos = 0;
+    nuevos = 0;
+    layer_actual = -1;
+    puf_1 = false;
+    wait_e1 = false;
+    kill_e1 = false;
+    kill_m1 = false;
+    wait_m1 = false;
+    
+    puf_2 = false;
+    wait_e2 = false;
+    kill_e2 = false;
+    kill_m2 = false;
+    wait_m2 = false;
+    
+    puf_3 = false;
+    wait_e3 = false;
+    kill_e3 = false;
+    kill_m3 = false;
+    wait_m3 = false;
+    
+    layer_1_free = true;
+    layer_2_free = true;
+    layer_3_free = true;
     
     // llenamos el buffer de player_1
     for (int i=0; i<50; i++) avg.push_back(glm::vec2(0,0));
@@ -31,14 +55,14 @@ void ofApp::setup(){
     
     ofSetBackgroundAuto(true);
     ofSetVerticalSync(true);
-    ofDisableArbTex(); //Use GL_TEXTURE_2D textures.
+    ofDisableArbTex();
     shaderX.load("shaderBlurX");
     shaderY.load("shaderBlurY");
     fondo_1.load("fondo-1.jpg");
     fondo_2.load("fondo-2.jpg");
     fondo_3.load("fondo-3.png");
     fondo_4.load("fondo-4.png");
-    modo = 5; //inicia con fondo negro
+
     
     // --------------  box2d settings  ----------------------
     gY = 0;
@@ -46,7 +70,7 @@ void ofApp::setup(){
     box2d.setGravity(0.0,gY);
     box2d.registerGrabbing();
     box2d_esporas.init();
-    box2d_esporas.setGravity(0.0,0.0);
+    box2d_esporas.setGravity(0.0,0.05);
     box2d_esporas.registerGrabbing();
   
 
@@ -70,6 +94,14 @@ void ofApp::setup(){
     Cortinariusx3.preloadAllFrames();
     Cortinariusx3.setFrameRate(1);
     
+    Leucocoprinus.loadSequence("Leucocoprinus/LeucocoprinusMice-", "png", 1, 33, 2);
+    Leucocoprinus.preloadAllFrames();
+    Leucocoprinus.setFrameRate(1);
+    
+    Morchella.loadSequence("Morchella/MorchellaMice-", "png", 1, 33, 2);
+    Morchella.preloadAllFrames();
+    Morchella.setFrameRate(1);
+    
     //---------------------------------------------------
     carga_lineas(); // líneas horizonte guardadas en bin/data/lines.txt
     gui_settings();
@@ -82,24 +114,334 @@ void ofApp::update(){
         box2d.setGravity(gravedadX,gravedadY);
         gY=gravedadY;
     }
+    
+    
+    
+    
+    
 
-    if ((f_shroom<58) && (play_shroom)){                  // chequea play y si no ha llegado al final
-        f_shroom++;                                       // avanza cuadro
-        if (!esporoma_status) esporoma_status = true;     // activa status play
+    if ((f_shroom_1<58) && (play_shroom_1)){                  // chequea play y si no ha llegado al final
+        f_shroom_1++;                                       // avanza cuadro
+        if (!esporoma_status_1) esporoma_status_1 = true;     // activa status play
     }
     else {
-        if (esporoma_status) {                            // si llega aquí con status play es que terminó
-            puf = true;                                     // esporula
-            esporoma_status = false;                      // status stop
+        if (esporoma_status_1) {                            // si llega aquí con status play es que terminó
+            puf_1 = true;                                     // esporula
+            esporoma_status_1 = false; 
+            primer_puf_1 = true;
+            num_esp_1 = 0;
         }
     }
     
     
-    if (puf) {
-        esporula(punto);
-        //++num_esp;
-        puf = false;
+
+    if (puf_1) {
+        if (primer_puf_1) inicio_puf_1 = ofGetElapsedTimeMillis();
+        primer_puf_1 = false;
+        ahora_puf_1 = ofGetElapsedTimeMillis();
+        if ((ahora_puf_1-inicio_puf_1)>2000) {
+            esporula(punto_m1,150);
+            inicio_puf_1 = ofGetElapsedTimeMillis();
+            ++num_esp_1;
+            if (num_esp_1==3) {
+                puf_1=false;
+                wait_e1 = true;
+                wait_m1 = true;
+                tiempo_wait_e1 = true;
+                tiempo_wait_m1 = true;
+                
+            }
+        }
     }
+    
+    
+    if (wait_e1) {
+        if (tiempo_wait_e1) wait_kill_e1 = ofGetElapsedTimeMillis();
+        tiempo_wait_e1 = false;
+        ahora_wait_e1 = ofGetElapsedTimeMillis();
+        if ((ahora_wait_e1-wait_kill_e1)>5000) {
+           wait_e1 = false;
+           kill_e1 = true;
+            tiempo_kill_e1= true;
+
+            }
+        }
+    
+    if (wait_m1) {
+        if (tiempo_wait_m1) wait_kill_m1 = ofGetElapsedTimeMillis();
+        tiempo_wait_m1 = false;
+        ahora_wait_m1 = ofGetElapsedTimeMillis();
+        if ((ahora_wait_m1-wait_kill_m1)>20000) {
+           wait_m1 = false;
+           kill_m1 = true;
+            tiempo_kill_m1 = true;
+
+            }
+        }
+        
+    
+    if (kill_e1) {
+            if (tiempo_kill_e1) inicio_kill_e1 = ofGetElapsedTimeMillis();
+            tiempo_kill_e1 = false;
+            ahora_kill_e1 = ofGetElapsedTimeMillis();
+            if ((ahora_kill_e1-inicio_kill_e1)>10) {
+                fade_esporomas_1--;
+                inicio_kill_e1 = ofGetElapsedTimeMillis();
+                if (fade_esporomas_1==0) {
+                    kill_e1 = false;
+                    play_shroom_1 = false;
+                    f_shroom_1 = 0;
+                    fb_esporomas_1.begin();
+                    ofClear(0,0,0,0);
+                    fb_esporomas_1.end();
+                    fade_esporomas_1 = 255;
+                }
+            }
+        }
+    
+    if (kill_m1) {
+            if (tiempo_kill_m1) inicio_kill_m1 = ofGetElapsedTimeMillis();
+            tiempo_kill_m1 = false;
+            ahora_kill_m1 = ofGetElapsedTimeMillis();
+            if ((ahora_kill_m1-inicio_kill_m1)>10) {
+                fade1--;
+                inicio_kill_m1 = ofGetElapsedTimeMillis();
+                if (fade1==0) {
+                    kill_m1 = false;
+                    micelio_player_1.clear();
+                    fb_player_1.begin();
+                    ofClear(0,0,0,0);
+                    fb_player_1.end();
+                    fb_blur_X1.begin();
+                    ofClear(0,0,0,0);
+                    fb_blur_X1.end();
+                    fb_blur_Y1.begin();
+                    ofClear(0,0,0,0);
+                    fb_blur_Y1.end();
+                    fade1 = 255;
+                    layer_1_free = true;
+                    stop_m1 = false;
+                    contador_1 = 0;
+                }
+            }
+        }
+    
+
+    
+    
+    
+    if ((f_shroom_2<58) && (play_shroom_2)){                  // chequea play y si no ha llegado al final
+        f_shroom_2++;                                       // avanza cuadro
+        if (!esporoma_status_2) esporoma_status_2 = true;     // activa status play
+    }
+    else {
+        if (esporoma_status_2) {                            // si llega aquí con status play es que terminó
+            puf_2 = true;                                     // esporula
+            esporoma_status_2 = false;                      // status stop
+            primer_puf_2 = true;
+            num_esp_2 = 0;
+        }
+    }
+    
+    if (puf_2) {
+        if (primer_puf_2) inicio_puf_2 = ofGetElapsedTimeMillis();
+        primer_puf_2 = false;
+        ahora_puf_2 = ofGetElapsedTimeMillis();
+        if ((ahora_puf_2-inicio_puf_2)>2000) {
+            esporula(punto_m2,150);
+            inicio_puf_2 = ofGetElapsedTimeMillis();
+            ++num_esp_2;
+            if (num_esp_2==3) {
+                puf_2=false;
+                wait_e2 = true;
+                wait_m2 = true;
+                tiempo_wait_e2 = true;
+                tiempo_wait_m2 = true;
+            }
+        }
+    }
+    
+    
+    if (wait_e2) {
+        if (tiempo_wait_e2) wait_kill_e2 = ofGetElapsedTimeMillis();
+        tiempo_wait_e2 = false;
+        ahora_wait_e2 = ofGetElapsedTimeMillis();
+        if ((ahora_wait_e2-wait_kill_e2)>5000) {
+           wait_e2 = false;
+           kill_e2 = true;
+            tiempo_kill_e2= true;
+
+            }
+        }
+    
+    if (wait_m2) {
+        if (tiempo_wait_m2) wait_kill_m2 = ofGetElapsedTimeMillis();
+        tiempo_wait_m2 = false;
+        ahora_wait_m2 = ofGetElapsedTimeMillis();
+        if ((ahora_wait_m2-wait_kill_m2)>20000) {
+           wait_m2 = false;
+           kill_m2 = true;
+            tiempo_kill_m2 = true;
+
+            }
+        }
+        
+    
+    if (kill_e2) {
+            if (tiempo_kill_e2) inicio_kill_e2 = ofGetElapsedTimeMillis();
+            tiempo_kill_e2 = false;
+            ahora_kill_e2 = ofGetElapsedTimeMillis();
+            if ((ahora_kill_e2-inicio_kill_e2)>10) {
+                fade_esporomas_2--;
+                inicio_kill_e2 = ofGetElapsedTimeMillis();
+                if (fade_esporomas_2==0) {
+                    kill_e2 = false;
+                    play_shroom_2 = false;
+                    f_shroom_2 = 0;
+                    fb_esporomas_2.begin();
+                    ofClear(0,0,0,0);
+                    fb_esporomas_2.end();
+                    fade_esporomas_2 = 255;
+                }
+            }
+        }
+    
+    if (kill_m2) {
+            if (tiempo_kill_m2) inicio_kill_m2 = ofGetElapsedTimeMillis();
+            tiempo_kill_m2 = false;
+            ahora_kill_m2 = ofGetElapsedTimeMillis();
+            if ((ahora_kill_m2-inicio_kill_m2)>10) {
+                fade2--;
+                inicio_kill_m2 = ofGetElapsedTimeMillis();
+                if (fade2==0) {
+                    kill_m2 = false;
+                    micelio_player_2.clear();
+                    fb_player_2.begin();
+                    ofClear(0,0,0,0);
+                    fb_player_2.end();
+                    fb_blur_X2.begin();
+                    ofClear(0,0,0,0);
+                    fb_blur_X2.end();
+                    fb_blur_Y2.begin();
+                    ofClear(0,0,0,0);
+                    fb_blur_Y2.end();
+                    fade2 = 255;
+                    layer_2_free = true;
+                    stop_m2 = false;
+                    contador_2 = 0;
+                   
+                }
+            }
+        }
+    
+    
+    
+    
+    if ((f_shroom_3<58) && (play_shroom_3)){                  // chequea play y si no ha llegado al final
+        f_shroom_3++;                                       // avanza cuadro
+        if (!esporoma_status_3) esporoma_status_3 = true;     // activa status play
+    }
+    else {
+        if (esporoma_status_3) {                            // si llega aquí con status play es que terminó
+            puf_3 = true;                                     // esporula
+            esporoma_status_3 = false;                      // status stop
+            primer_puf_3 = true;
+            num_esp_3 = 0;        }
+    }
+    
+    if (puf_3) {
+        if (primer_puf_3) inicio_puf_3 = ofGetElapsedTimeMillis();
+        primer_puf_3 = false;
+        ahora_puf_3 = ofGetElapsedTimeMillis();
+        if ((ahora_puf_3-inicio_puf_3)>2000) {
+            esporula(punto_m3,150);
+            inicio_puf_3 = ofGetElapsedTimeMillis();
+            ++num_esp_3;
+            if (num_esp_3==3) {
+                puf_3=false;
+                wait_e3 = true;
+                wait_m3 = true;
+                tiempo_wait_e3 = true;
+                tiempo_wait_m3 = true;
+            }
+        }
+    }
+    
+    if (wait_e3) {
+        if (tiempo_wait_e3) wait_kill_e3 = ofGetElapsedTimeMillis();
+        tiempo_wait_e3 = false;
+        ahora_wait_e3 = ofGetElapsedTimeMillis();
+        if ((ahora_wait_e3-wait_kill_e3)>5000) {
+           wait_e3 = false;
+           kill_e3 = true;
+            tiempo_kill_e3= true;
+
+            }
+        }
+    
+    if (wait_m3) {
+        if (tiempo_wait_m3) wait_kill_m3 = ofGetElapsedTimeMillis();
+        tiempo_wait_m3 = false;
+        ahora_wait_m3 = ofGetElapsedTimeMillis();
+        if ((ahora_wait_m3-wait_kill_m3)>20000) {
+           wait_m3 = false;
+           kill_m3 = true;
+            tiempo_kill_m3 = true;
+
+            }
+        }
+        
+    
+    if (kill_e3) {
+            if (tiempo_kill_e3) inicio_kill_e3 = ofGetElapsedTimeMillis();
+            tiempo_kill_e3 = false;
+            ahora_kill_e3 = ofGetElapsedTimeMillis();
+            if ((ahora_kill_e3-inicio_kill_e3)>10) {
+                fade_esporomas_3--;
+                inicio_kill_e3 = ofGetElapsedTimeMillis();
+                if (fade_esporomas_3==0) {
+                    kill_e3 = false;
+                    play_shroom_3 = false;
+                    f_shroom_3 = 0;
+                    fb_esporomas_3.begin();
+                    ofClear(0,0,0,0);
+                    fb_esporomas_3.end();
+                    fade_esporomas_3 = 255;
+                }
+            }
+        }
+    
+    if (kill_m3) {
+            if (tiempo_kill_m3) inicio_kill_m3 = ofGetElapsedTimeMillis();
+            tiempo_kill_m3 = false;
+            ahora_kill_m3 = ofGetElapsedTimeMillis();
+            if ((ahora_kill_m3-inicio_kill_m3)>10) {
+                fade3--;
+                inicio_kill_m3 = ofGetElapsedTimeMillis();
+                if (fade3==0) {
+                    kill_m3 = false;
+                    micelio_player_3.clear();
+                    fb_player_3.begin();
+                    ofClear(0,0,0,0);
+                    fb_player_3.end();
+                    fb_blur_X3.begin();
+                    ofClear(0,0,0,0);
+                    fb_blur_X3.end();
+                    fb_blur_Y3.begin();
+                    ofClear(0,0,0,0);
+                    fb_blur_Y3.end();
+                    fade3 = 255;
+                    layer_3_free = true;
+                    stop_m3 = false;
+                    contador_3 = 0;
+                }
+            }
+        }
+    
+    
+    
+    
+    
    
 #ifdef KINECT
     kinect.update();
@@ -118,41 +460,96 @@ void ofApp::update(){
         contourFinder.findContours(grayImage);
         contourFinder.setFindHoles(false);
         contourFinder.setSimplify(false);
-        players = contourFinder.size();
+        
+        //players = contourFinder.size();
+        
       
     }
 #endif
     
-    if ((players)&&(nada)) {
-        if (!comienzo) inicio = ofGetElapsedTimeMillis();
-        comienzo = true;
-        float ahora = ofGetElapsedTimeMillis();
-        if ((ahora-inicio)>1000) {
-            if (players==1) start_micelio_1();
-            if (players==2) {
-                start_micelio_1();
-                start_micelio_2();
+    players = modo;  // cambiar por contourFinder.size
+    
+    if (players<4) {
+        if (players!=antiguos) {
+            nuevos = players-antiguos;
+            if (nuevos==1) {
+                new_layer();
             }
-            nada = false;
+            if (nuevos==2) {
+                new_layer();
+                new_layer();
+            }
+            if (nuevos==3) {
+                new_layer();
+                new_layer();
+                new_layer();
+            }
+            antiguos = players;
+        }
+    }
+    else {
+        //bla
+    }
+    
+    
+  
+    
+    tet = morphogenesis(micelio_player_1,100);
+    tet2 = morphogenesis(micelio_player_2,100);
+    tet3 = morphogenesis(micelio_player_3,100);
+    
+    
+    
+    if ((tet)&&(!stop_m1)) {
+        if (!players) kill_m1=true;
+        else {
+            contador_1++;
+            if (contador_1>3) {
+                stop_m1= true;
+                play_shroom_1=true;
+                f_shroom_1 = 0;
+                shroom_1 = ofRandom(5);
+                pos_esporoma_1 = origen_1;
+            }
+            else start_micelio_1();
         }
     }
     
-    tet = morphogenesis(micelio_player_1,50); //100
-    tet2 = morphogenesis(micelio_player_2,50);
-    tet3 = morphogenesis(micelio_player_3,50);
-    
-    if ((tet)&&(players>0)&&(!fadeout_1)) {
-        start_micelio_1();
-        contador++;
-        if (contador>20) {
-            fadeout_1= true;
+    if ((tet2)&&(!stop_m2)) {
+        if (!players) kill_m2=true;
+        else {
+            contador_2++;
+            if (contador_2>2) {
+                stop_m2= true;
+                play_shroom_2=true;
+                f_shroom_2 = 0;
+                shroom_2 = ofRandom(5);
+                pos_esporoma_2 = origen_2;
+            }
+            else start_micelio_2();
         }
     }
     
-
+    if ((tet3)&&(!stop_m3)) {
+        if (!players) kill_m3=true;
+        else {
+            
+            contador_3++;
+            if (contador_3>1) {
+                stop_m3= true;
+                play_shroom_3=true;
+                f_shroom_3 = 0;
+                shroom_3 = ofRandom(5);
+                pos_esporoma_3 = origen_3;
+            }
+            else start_micelio_3();
+        }
+    }
+    
+    
+    
     esporulacion(esporas,5000);
     
-    //ofVec2f mouse2(ofGetMouseX(), ofGetMouseY());
     if (ord.size()) {
         
         ofVec2f manoD(ord[2].x*3.,ord[2].y*2.);
@@ -167,12 +564,7 @@ void ofApp::update(){
             //box->addAttractionPoint(mouse, 1.0);
         }
     }
-  /*  for(auto &box : micelio_player_1) {
-        float dis = mouse2.distance(box->getPosition());
-        box->addAttractionPoint(mouse2.x,mouse2.y-offset_fb_y, ofRandom(0.001));
-        //box->addAttractionPoint(mouse, 1.0);
-    }*/
-    
+
     box2d.update();
     box2d_esporas.update();
     ofRemove(micelio_player_1, ofxBox2dBaseShape::shouldRemoveOffScreen);
@@ -193,34 +585,81 @@ void ofApp::update(){
     draw_fb_player(esporas);
     fb_esporas.end();
 }
-  
-    /* ofVec2f mouse(ofGetMouseX(), ofGetMouseY());
-     float minDis = ofGetMousePressed() ? 300 : 200;
-     
-         for(auto &circle : micelio_player_1) {
-         float dis = mouse.distance(circle->getPosition());
-         
-             circle->addAttractionPoint(mouse.x,mouse.y, 0.0006);
-     }*/
 
-void ofApp::esporula(ofVec2f punto) {
-    for (int i=0;i<100;i++) {
+void ofApp::new_layer() {
+   /* layer_actual++;
+    layer_actual%=3;
+    if (layer_actual==0) start_micelio_1();
+    if (layer_actual==1) start_micelio_2();
+    if (layer_actual==2) start_micelio_3();*/
+    
+    bool ready = false;
+    
+    if (layer_1_free&&!ready) {
+        start_micelio_1();
+        ready = true;
+        layer_1_free = false;
+    }
+    
+    if (layer_2_free&&!ready) {
+        start_micelio_2();
+        ready = true;
+        layer_2_free = false;
+    }
+    
+    if (layer_3_free&&!ready) {
+        start_micelio_3();
+        ready = true;
+        layer_3_free = false;
+    }
+    
+    
+}
+  
+void ofApp::start_micelio_1() {
+    origen_1 = (ofRandom(37.5,62.5))/100.;
+    if (edges.size()>0) punto_m1=edges[0]->getPointAtPercent(origen_1);
+    for (int i=0;i<10;i++) {
+        auto particle = make_shared<CustomParticle>(box2d.getWorld(),punto_m1.x ,600-offset_fb_y); //
+        particle->setRadius(0.3);
+        particle->color.set(255,255,255,255);
+        micelio_player_1.push_back(particle);
+    }
+}
+
+void ofApp::start_micelio_2() {
+    origen_2 = (ofRandom(62.5,87.5))/100.;
+    if (edges.size()>0) punto_m2=edges[0]->getPointAtPercent(origen_2);
+    
+    for (int i=0;i<10;i++) {
+        auto particle = make_shared<CustomParticle>(box2d.getWorld(),punto_m2.x,600-offset_fb_y); //
+        particle->setRadius(0.3);
+        particle->color.set(255,255,255,255);
+        micelio_player_2.push_back(particle);
+    }
+}
+
+void ofApp::start_micelio_3() {
+    origen_3 = (ofRandom(12.5,37.5))/100.;
+    if (edges.size()>0) punto_m3=edges[0]->getPointAtPercent(origen_3);
+    
+    for (int i=0;i<10;i++) {
+        auto particle = make_shared<CustomParticle>(box2d.getWorld(),punto_m3.x,600-offset_fb_y); //
+        particle->setRadius(0.3);
+        particle->color.set(255,255,255,255);
+        micelio_player_3.push_back(particle);
+    }
+}
+
+void ofApp::esporula(ofVec2f punto, int espora) {
+    for (int i=0;i<espora;i++) {
         auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), punto.x, punto.y+offset_fb_y-100);
         particle->setRadius(0.05);
         esporas.push_back(particle);
     }
 }
 
-/*int ofApp::smooth(int valor) {
-    
-    avg.pop_front();
-    avg.push_back(valor);
-    int promedio;
-    int tam = avg.size();
-    for (int i=0; i<tam ; i++) promedio+=avg[i];
-    promedio = promedio/tam;
-    return (promedio);
-}*/
+
 
 //--------------------------------------------------------------
 void ofApp::draw(){
@@ -228,13 +667,13 @@ void ofApp::draw(){
     if (!color_fondo) ofBackground(0,0,0);
     else ofBackground(0,0,255);
     ofSetColor(255);
-    ofPushMatrix();
-    ofTranslate(-100,altura_micelio);
-    if (modo==1) fondo_1.draw(0,0);
-    if (modo==2) fondo_2.draw(0,0);
-    if (modo==3) fondo_3.draw(0,0);
-    if (modo==4) fondo_4.draw(0,0);
-    ofPopMatrix();
+    //ofPushMatrix();
+    //ofTranslate(-100,altura_micelio);
+    //if (modo==1) fondo_1.draw(0,0);
+    //if (modo==2) fondo_2.draw(0,0);
+    //if (modo==3) fondo_3.draw(0,0);
+    //if (modo==4) fondo_4.draw(0,0);
+    //ofPopMatrix();
     ofSetColor(230,200,0);
     
     for (auto &line : lines) {
@@ -254,8 +693,12 @@ void ofApp::draw(){
     
     ofSetColor(255,255,255,255);
     fb_esporas.draw(0,0); // 0,688
-    ofSetColor(255,255,255,fade_esporomas);
-    fb_esporomas.draw(0,0);
+    ofSetColor(255,255,255,fade_esporomas_1);
+    fb_esporomas_1.draw(0,0);
+    ofSetColor(255,255,255,fade_esporomas_2);
+    fb_esporomas_2.draw(0,0);
+    ofSetColor(255,255,255,fade_esporomas_3);
+    fb_esporomas_3.draw(0,0);
     ofSetColor(255,255,255,fade1);
     fb_blur_Y1.draw(0,offset_fb_y); // 0,688
     ofSetColor(255,255,255,fade2);
@@ -339,15 +782,17 @@ void ofApp::draw(){
 
     //float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
     //punto(0,0);
-    if (edges.size()>0) punto=edges[0]->getPointAtPercent(pos_esporoma);
+    //if (edges.size()>0) punto=edges[0]->getPointAtPercent(pos_esporoma);
     
-    ofNoFill();
-    ofSetHexColor(0xEE00CC);
-    ofDrawCircle(punto.x,punto.y+offset_fb_y,20);
+    //ofNoFill();
+    //ofSetHexColor(0xEE00CC);
+    //ofDrawCircle(punto.x,punto.y+offset_fb_y,20);
     //ofDrawCircle(mx_promedio,offset_fb_y,20);
-    ofSetHexColor(0xFFFFFF);
+    //ofSetHexColor(0xFFFFFF);
     
-    if (play_shroom) callampas(shroom,punto);
+    if (play_shroom_1) callampas_1(shroom_1,punto_m1);
+    if (play_shroom_2) callampas_2(shroom_2,punto_m2);
+    if (play_shroom_3) callampas_3(shroom_3,punto_m3);
  
     if (gui) {
         gui1.draw();
@@ -377,21 +822,75 @@ bool ofApp::sort_y(glm::vec2 &a, glm::vec2 &b) {
      }
 }
 
-void ofApp::callampas(int seta, ofVec2f pos) {
+void ofApp::callampas_1(int seta, ofVec2f pos) {
     
-    fb_esporomas.begin();
+    fb_esporomas_1.begin();
     ofClear(0,0,0,0);
         if (seta==0) {
-            Amanita.getFrame(f_shroom/2)->draw(pos.x-50,pos.y+offset_fb_y-114 ,100,150);
+            Amanita.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-114 ,100,150);
         }
         if (seta==1) {
-            Cortinarius.getFrame(f_shroom/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
+            Cortinarius.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
         }
         if (seta==2) {
-            Cortinariusx3.getFrame(f_shroom/2)->draw(pos.x-50,pos.y+offset_fb_y-130,100,150);
+            Cortinariusx3.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-130,100,150);
         }
+        if (seta==3) {
+            Leucocoprinus.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
+    }
+        if (seta==4) {
+            Morchella.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-90,100,150);
+    }
     
-fb_esporomas.end();
+fb_esporomas_1.end();
+    
+}
+
+void ofApp::callampas_2(int seta, ofVec2f pos) {
+    
+    fb_esporomas_2.begin();
+    ofClear(0,0,0,0);
+        if (seta==0) {
+            Amanita.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-114 ,100,150);
+        }
+        if (seta==1) {
+            Cortinarius.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
+        }
+        if (seta==2) {
+            Cortinariusx3.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-130,100,150);
+        }
+        if (seta==3) {
+            Leucocoprinus.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
+    }
+        if (seta==4) {
+            Morchella.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-90,100,150);
+    }
+    
+fb_esporomas_2.end();
+    
+}
+
+void ofApp::callampas_3(int seta, ofVec2f pos) {
+    
+    fb_esporomas_3.begin();
+    ofClear(0,0,0,0);
+        if (seta==0) {
+            Amanita.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-114 ,100,150);
+        }
+        if (seta==1) {
+            Cortinarius.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
+        }
+        if (seta==2) {
+            Cortinariusx3.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-130,100,150);
+        }
+        if (seta==3) {
+            Leucocoprinus.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
+    }
+        if (seta==4) {
+            Morchella.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-90,100,150);
+    }
+    
+fb_esporomas_3.end();
     
 }
 
@@ -407,10 +906,10 @@ void ofApp::keyPressed(int key){
     
     if (key>47 && key<58) modo=key-48;
     if (key == 'y') {
-        play_shroom=true;
-        f_shroom = 0;
-        shroom = ofRandom(3);
-        pos_esporoma = ofRandom(1);
+       // play_shroom=true;
+        //f_shroom = 0;
+        //shroom = ofRandom(5);
+        //pos_esporoma = ofRandom(1);
     }
     if (key == 'k') kontorno=!kontorno ;
     if (key == 'g') gui=!gui ;
@@ -478,7 +977,6 @@ void ofApp::keyPressed(int key){
     }
     
     if(key == 'x') {
-        //ofSetBackgroundAuto(false);
         for (int i=0;i<5;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
             particle->setRadius(0.3);
@@ -496,12 +994,7 @@ void ofApp::keyPressed(int key){
     }
     
 if(key == 'v') {
-    //ofSetBackgroundAuto(false);
-    for (int i=0;i<50;i++) {
-        auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), mouseX ,mouseY);
-        particle->setRadius(0.05);
-        esporas.push_back(particle);
-    }
+    esporula(ofVec2f(mouseX,mouseY-offset_fb_y+100),100);
 }
         
         // want to save out some line...
@@ -525,26 +1018,26 @@ if(key == 'v') {
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
     
-    lines.back().addVertex(x, y);
+   // lines.back().addVertex(x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
     
-    lines.push_back(ofPolyline());
-    lines.back().addVertex(x, y);
+   // lines.push_back(ofPolyline());
+   // lines.back().addVertex(x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
     
-    auto edge = make_shared<ofxBox2dEdge>();
-    lines.back().simplify();
-    for (int i=0; i<lines.back().size(); i++) {
-        edge->addVertex(lines.back()[i]+ofPoint(0,-offset_fb_y));
-    }
-    edge->create(box2d.getWorld());
-    edges.push_back(edge);
+   // auto edge = make_shared<ofxBox2dEdge>();
+   // lines.back().simplify();
+  //  for (int i=0; i<lines.back().size(); i++) {
+  //      edge->addVertex(lines.back()[i]+ofPoint(0,-offset_fb_y));
+  //  }
+  //  edge->create(box2d.getWorld());
+  //  edges.push_back(edge);
 }
 
 //--------------------------------------------------------------
@@ -606,16 +1099,6 @@ int ofApp::esporulacion(vector<shared_ptr<CustomParticle>> &esporas, int lifetim
             
             if (size<lifetime)   {                                   // si es menor al máximo de hifas
                 esporas[i]->setVelocity(bump.x,bump.y);  //
-                
-              
-                 //   esporas[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.01);
-            
-                
-              /*  if (ofRandom(0,1)<0.003) {                      // factor de mitosis
-                    auto nueva = make_shared<CustomParticle>(box2d.getWorld(), esporas[i]->getPosition().x,esporas[i]->getPosition().y);
-                    nueva->setRadius(esporas[i]->getRadius());
-                    esporas.push_back(nueva);
-                }*/
             }
             else {
                 borra_esporas = true;
@@ -738,10 +1221,20 @@ void ofApp::allocate_fb(){
     
     //  -------------- framebuffer settings -----------------------
     
-    fb_esporomas.allocate(1920,1200,GL_RGBA);
-    fb_esporomas.begin();
+    fb_esporomas_1.allocate(1920,1200,GL_RGBA);
+    fb_esporomas_1.begin();
     ofClear(0,0,0,0);
-    fb_esporomas.end();
+    fb_esporomas_1.end();
+    
+    fb_esporomas_2.allocate(1920,1200,GL_RGBA);
+    fb_esporomas_2.begin();
+    ofClear(0,0,0,0);
+    fb_esporomas_2.end();
+    
+    fb_esporomas_3.allocate(1920,1200,GL_RGBA);
+    fb_esporomas_3.begin();
+    ofClear(0,0,0,0);
+    fb_esporomas_3.end();
     
     fb_esporas.allocate(1920,1200,GL_RGBA);
     fb_esporas.begin();
@@ -824,7 +1317,9 @@ void ofApp::gui_settings() {
     gui4.add(tamano3.set("radio",0.5, 0.0, 3.0));
     
     gui5.setup("shroom");
-    gui5.add(fade_esporomas.set("fade",255, 0, 255));
+    gui5.add(fade_esporomas_1.set("fade 1",255, 0, 255));
+    gui5.add(fade_esporomas_2.set("fade 2",255, 0, 255));
+    gui5.add(fade_esporomas_3.set("fade 3",255, 0, 255));
     gui5.setPosition(880,10);
 }
 
@@ -846,6 +1341,12 @@ void ofApp::reporte() {
         //ofDrawBitmapString("CX: "+ ofToString(centroid.x),0,100);
         ofDrawBitmapString("gY: "+ ofToString(gravedadY),0,110);
         ofDrawBitmapString("TEST: "+ ofToString(tet),0,120);
+        ofDrawBitmapString("players: "+ ofToString(players),0,130);
+        ofDrawBitmapString("nuevos: "+ ofToString(nuevos),0,140);
+        ofDrawBitmapString("antiguos: "+ ofToString(antiguos),0,150);
+        ofDrawBitmapString("layer: "+ ofToString(layer_actual),0,160);
+        ofDrawBitmapString("origen_1 "+ ofToString(origen_1),0,170);
+
         ofPopMatrix();
     }
 }
@@ -870,20 +1371,4 @@ void ofApp::picture_in_picture() {
     }
 }
 
-void ofApp::start_micelio_1() {
-    for (int i=0;i<10;i++) {
-        auto particle = make_shared<CustomParticle>(box2d.getWorld(), centroid1.x*3. ,600-offset_fb_y); //
-        particle->setRadius(0.3);
-        particle->color.set(255,255,255,255);
-        micelio_player_1.push_back(particle);
-    }
-}
 
-void ofApp::start_micelio_2() {
-    for (int i=0;i<10;i++) {
-        auto particle = make_shared<CustomParticle>(box2d.getWorld(), centroid2.x*3. ,600-offset_fb_y); //
-        particle->setRadius(0.3);
-        particle->color.set(255,255,255,255);
-        micelio_player_2.push_back(particle);
-    }
-}
