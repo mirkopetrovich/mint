@@ -6,13 +6,24 @@ using namespace cv;
 //--------------------------------------------------------------
 void ofApp::setup(){
     
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    ofEnableAntiAliasing();
+    ofEnableSmoothing();
+    ofHideCursor();
+    
     nada = true ;
     comienzo = false;
+    
     modo = 0;
     antiguos = 0;
     nuevos = 0;
+    
+    
     layer_actual = -1;
-    puf_1 = false;
+    
+    
+    // IDENTIFICAR VARIABLES -------------------------
+    puf_1 = false;          // flag indica que terminó la animación
     wait_e1 = false;
     kill_e1 = false;
     kill_m1 = false;
@@ -30,6 +41,8 @@ void ofApp::setup(){
     kill_m3 = false;
     wait_m3 = false;
     
+    // -----------------------------------------------------
+    
     layer_1_free = true;
     layer_2_free = true;
     layer_3_free = true;
@@ -38,10 +51,7 @@ void ofApp::setup(){
     for (int i=0; i<50; i++) avg.push_back(glm::vec2(0,0));
     for (int i=0; i<50; i++) avg2.push_back(glm::vec2(0,0));
     
-    ofSetLogLevel(OF_LOG_VERBOSE);
-    ofEnableAntiAliasing();
-    ofEnableSmoothing();
-    ofHideCursor();
+  
 
 #ifdef KINECT
     kinect.setRegistration(true);
@@ -121,11 +131,11 @@ void ofApp::update(){
     
 
     if ((f_shroom_1<58) && (play_shroom_1)){                  // chequea play y si no ha llegado al final
-        f_shroom_1++;                                       // avanza cuadro
+        f_shroom_1++;                                         // avanza cuadro
         if (!esporoma_status_1) esporoma_status_1 = true;     // activa status play
     }
     else {
-        if (esporoma_status_1) {                            // si llega aquí con status play es que terminó
+        if (esporoma_status_1) {                              // si llega aquí con status play es que terminó
             puf_1 = true;                                     // esporula
             esporoma_status_1 = false; 
             primer_puf_1 = true;
@@ -438,14 +448,8 @@ void ofApp::update(){
             }
         }
     
-    
-    
-    
-    
-   
 #ifdef KINECT
     kinect.update();
-    
     if (kinect.isFrameNew()) {
         grayImage.setFromPixels(kinect.getDepthPixels());
         grayImage.mirror(0,1);
@@ -461,13 +465,13 @@ void ofApp::update(){
         contourFinder.setFindHoles(false);
         contourFinder.setSimplify(false);
         
-        players = contourFinder.size();
+        //players = contourFinder.size();
         
       
     }
 #endif
     
-    //players = modo;  // cambiar por contourFinder.size
+    players = modo;  // cambiar por contourFinder.size
     
     if (players<4) {
         if (players!=antiguos) {
@@ -487,6 +491,8 @@ void ofApp::update(){
             antiguos = players;
         }
     }
+    
+    
     else {
         //bla
     }
@@ -587,12 +593,7 @@ void ofApp::update(){
 }
 
 void ofApp::new_layer() {
-   /* layer_actual++;
-    layer_actual%=3;
-    if (layer_actual==0) start_micelio_1();
-    if (layer_actual==1) start_micelio_2();
-    if (layer_actual==2) start_micelio_3();*/
-    
+   
     bool ready = false;
     
     if (layer_1_free&&!ready) {
@@ -666,45 +667,36 @@ void ofApp::draw(){
   
     if (!color_fondo) ofBackground(0,0,0);
     else ofBackground(0,0,255);
-    ofSetColor(255);
-    //ofPushMatrix();
-    //ofTranslate(-100,altura_micelio);
-    //if (modo==1) fondo_1.draw(0,0);
-    //if (modo==2) fondo_2.draw(0,0);
-    //if (modo==3) fondo_3.draw(0,0);
-    //if (modo==4) fondo_4.draw(0,0);
-    //ofPopMatrix();
-    ofSetColor(230,200,0);
-    
-    for (auto &line : lines) {
-        line.draw();
-   }
    
+    ofSetColor(230,200,0);
+    for (auto &line : lines) line.draw();
     if (lineas) {                    // Tecla 'l' dibuja línea horizonte
-        for (auto & edge : edges) {
-            ofPushMatrix();
-            ofTranslate(0,offset_fb_y);
-            edge->draw();
-            ofPopMatrix();
-        }
+    for (auto & edge : edges) {
+        ofPushMatrix();
+        ofTranslate(0,offset_fb_y);
+        edge->draw();
+        ofPopMatrix();
     }
+}
 
     gaussian_blur();
     
     ofSetColor(255,255,255,255);
-    fb_esporas.draw(0,0); // 0,688
-    ofSetColor(255,255,255,fade_esporomas_1);
+    fb_esporas.draw(0,0);                        // dibuja framebuffer de esporas
+    
+    ofSetColor(255,255,255,fade_esporomas_1);    // dibuja framebuffers de esporomas
     fb_esporomas_1.draw(0,0);
     ofSetColor(255,255,255,fade_esporomas_2);
     fb_esporomas_2.draw(0,0);
     ofSetColor(255,255,255,fade_esporomas_3);
     fb_esporomas_3.draw(0,0);
-    ofSetColor(255,255,255,fade1);
-    fb_blur_Y1.draw(0,offset_fb_y); // 0,688
+    
+    ofSetColor(255,255,255,fade1);               // dibuja framebuffers de micelios
+    fb_blur_Y1.draw(0,offset_fb_y);
     ofSetColor(255,255,255,fade2);
-    fb_blur_Y2.draw(0,offset_fb_y); // 0,688
+    fb_blur_Y2.draw(0,offset_fb_y);
     ofSetColor(255,255,255,fade3);
-    fb_blur_Y3.draw(0,offset_fb_y); // 0,688
+    fb_blur_Y3.draw(0,offset_fb_y);
     ofSetColor(255,255,255,255);
  
 #ifdef KINECT
@@ -731,7 +723,6 @@ void ofApp::draw(){
       //  if (n==3) {
       //  }
        // }
-        
         
         
     if (n>0) {
@@ -768,28 +759,11 @@ void ofApp::draw(){
         m2.x=pl2.x;
         m2.y=pl2.y;
         
-        
-        
         //ofDrawCircle(m1,20);
         //ofDrawCircle(m2,20);
     }
-            
-        
-   
-   
-    
 #endif
 
-    //float percent = ofMap(mouseX, 0, ofGetWidth(), 0, 1.0, true);
-    //punto(0,0);
-    //if (edges.size()>0) punto=edges[0]->getPointAtPercent(pos_esporoma);
-    
-    //ofNoFill();
-    //ofSetHexColor(0xEE00CC);
-    //ofDrawCircle(punto.x,punto.y+offset_fb_y,20);
-    //ofDrawCircle(mx_promedio,offset_fb_y,20);
-    //ofSetHexColor(0xFFFFFF);
-    
     if (play_shroom_1) callampas_1(shroom_1,punto_m1);
     if (play_shroom_2) callampas_2(shroom_2,punto_m2);
     if (play_shroom_3) callampas_3(shroom_3,punto_m3);
@@ -803,7 +777,7 @@ void ofApp::draw(){
     }
     picture_in_picture();
     reporte();
-    //ofDrawBitmapString(ofToString(players),1222,72);
+    ofDrawBitmapString(ofToString(players),1222,72);
 }
 
 bool ofApp::sort_x(glm::vec2 &a, glm::vec2 &b) {
@@ -917,8 +891,6 @@ void ofApp::keyPressed(int key){
     if (key == 'l') lineas=!lineas ;
     if (key == 'f') ofHideCursor();
     if (key == 'm') ofShowCursor();
-     
-        
     if (key == 'q') color_fondo=!color_fondo;
     if (key == 'o') silueta=!silueta;
     if (key == 't') simpli=!simpli;
@@ -926,9 +898,7 @@ void ofApp::keyPressed(int key){
         pip++;
         pip%=3;
     }
-    
-    
-    if(key == 's') {
+    if (key == 's') {
         micelio_player_1.clear();
         fb_player_1.begin();
         ofClear(0,0,0,0);
@@ -960,29 +930,25 @@ void ofApp::keyPressed(int key){
         ofClear(0,0,0,0);
         fb_blur_Y3.end();
     }
-    
-    
-    
-    if(key == 'a') {
+    if (key == 'a') {
         vsync=!vsync;
         ofSetVerticalSync(vsync);
     }
-    
-    if(key == 'z') {
+    if (key == 'z') {
         //ofSetBackgroundAuto(false);
         for (int i=0;i<10;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y); //
             particle->setRadius(0.3);
-            particle->color.set(255,255,255,255);
+            particle->color.set(0,255,255,255);
             micelio_player_1.push_back(particle);
-            
         }
     }
     
-    if(key == 'x') {
+    if (key == 'x') {
         for (int i=0;i<5;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
             particle->setRadius(0.3);
+            particle->color.set(255,0,255,255);
             micelio_player_2.push_back(particle);
         }
     }
@@ -992,13 +958,14 @@ void ofApp::keyPressed(int key){
         for (int i=0;i<3;i++) {
             auto particle = make_shared<CustomParticle>(box2d.getWorld(), mouseX ,mouseY-offset_fb_y);
             particle->setRadius(0.3);
+            particle->color.set(255,255,0,255);
             micelio_player_3.push_back(particle);
         }
     }
     
-if(key == 'v') {
+    if(key == 'v') {
     esporula(ofVec2f(mouseX,mouseY-offset_fb_y+100),100);
-}
+    }
         
         // want to save out some line...
         if(key == ' ') {
@@ -1060,12 +1027,10 @@ int ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player, int
             bump += micelio_player[i]->getVelocity();           // sumamos velocidad de hifa[i]
             bump.normalize();                                   // normaliza
             
-            if (size<lifetime)   {                                   // si es menor al máximo de hifas
+            if (size<lifetime)   {                              // si es menor al máximo de hifas
                 micelio_player[i]->setVelocity(bump.x,bump.y);  //
                 
-               /* if (ofRandom(0,1)<0.5) {
-                    micelio_player[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
-                }*/
+              //if (ofRandom(0,1)<0.5) micelio_player[i]->addAttractionPoint(mouseX,mouseY-(ofRandom(3)*100),0.0001);
                 
                 if (ofRandom(0,1)<0.003) {                      // factor de mitosis
                     auto nueva = make_shared<CustomParticle>(box2d.getWorld(), micelio_player[i]->getPosition().x,micelio_player[i]->getPosition().y);
@@ -1078,9 +1043,7 @@ int ofApp::morphogenesis(vector<shared_ptr<CustomParticle>> &micelio_player, int
                 ret = 1;
             }
         }
-        
         if (borra_micelio) micelio_player.clear();
-        
     }
     return(ret);
 }
@@ -1089,28 +1052,25 @@ int ofApp::esporulacion(vector<shared_ptr<CustomParticle>> &esporas, int lifetim
     
     int ret= 0;
     bool borra_esporas = false;                                 // flag para limpiar micelio al fin del loop
-    int size = esporas.size();                           // asignamos tamaño antes del loop ya que lo modificaremos
+    int size = esporas.size();                                  // asignamos tamaño antes del loop ya que lo modificaremos
     
     if (size) {                                                 // si el micelio tiene hifas ejecuta el loop
-        
         for (int i=0;i<size;i++) {
             ofVec2f bump;                                       // creamos vector 2f temporal para bump
             bump.set(ofRandom(-1,1),ofRandom(-1,1));            // le asignamos valores random
             bump *= random;                                     // multiplicamos for factor random
-            bump += esporas[i]->getVelocity();           // sumamos velocidad de hifa[i]
+            bump += esporas[i]->getVelocity();                  // sumamos velocidad de hifa[i]
             bump.normalize();                                   // normaliza
             
-            if (size<lifetime)   {                                   // si es menor al máximo de hifas
-                esporas[i]->setVelocity(bump.x,bump.y);  //
+            if (size<lifetime)   {                              // si es menor al máximo de hifas
+                esporas[i]->setVelocity(bump.x,bump.y);
             }
             else {
                 borra_esporas = true;
                 ret = 1;
             }
         }
-        
         if (borra_esporas) esporas.clear();
-        
     }
     return(ret);
 }
@@ -1368,7 +1328,9 @@ void ofApp::picture_in_picture() {
         }
         ofPushMatrix();
         ofTranslate(posk);
+#ifdef KINECT
         grayImage.draw(0,0,tamk.x,tamk.y);
+#endif
         ofPopMatrix();
         ofSetColor(255);
     }

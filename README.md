@@ -2,6 +2,8 @@
 
 TODO:
 
+-allocate grayImages
+
 -box2d para esporas
 
 -puntos de atracción para players (distintos box2d ?)
@@ -17,5 +19,7 @@ TODO:
 -ofxgui (colores players, vectores, button clear, toggle modos(capas horizonte))
 
 -mitosis
+
+-secuencias micelios
 
 

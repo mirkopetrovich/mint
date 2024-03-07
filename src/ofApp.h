@@ -9,7 +9,7 @@
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 
-#define KINECT
+//#define KINECT
 
 
 
