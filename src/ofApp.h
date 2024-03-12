@@ -72,6 +72,7 @@ class ofApp : public ofBaseApp{
     void new_layer();
     
     void esporula(ofVec2f punto, int espora);
+    void esporula_continuo(ofVec2f punto, int espora);
     void reporte();
     void gui_settings();
     void picture_in_picture();

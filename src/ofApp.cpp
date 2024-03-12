@@ -80,7 +80,7 @@ void ofApp::setup(){
     box2d.setGravity(0.0,gY);
     box2d.registerGrabbing();
     box2d_esporas.init();
-    box2d_esporas.setGravity(0.0,0.05);
+    box2d_esporas.setGravity(0.0,0.1);
     box2d_esporas.registerGrabbing();
   
 
@@ -570,6 +570,27 @@ void ofApp::update(){
             //box->addAttractionPoint(mouse, 1.0);
         }
     }
+    
+    
+    
+    float minDism = 50;
+    ofVec2f posf(mouseX,mouseY);
+
+    
+    for(auto &box : esporas) {
+        float dist = posf.distance(box->getPosition());
+        if(dist < minDism) box->addRepulsionForce(posf, 4.);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     box2d.update();
     box2d_esporas.update();
@@ -660,6 +681,18 @@ void ofApp::esporula(ofVec2f punto, int espora) {
     }
 }
 
+void ofApp::esporula_continuo(ofVec2f punto, int espora) {
+    int rojo = ofRandom(255);
+    int verde = ofRandom(255);
+    int azul = ofRandom(255);
+    
+    for (int i=0;i<espora;i++) {
+        auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), ofRandom(500)+500, ofRandom(500));
+        particle->color.set(rojo,verde,azul,255);
+        particle->setRadius(0.05);
+        esporas.push_back(particle);
+    }
+}
 
 
 //--------------------------------------------------------------
@@ -698,6 +731,8 @@ void ofApp::draw(){
     ofSetColor(255,255,255,fade3);
     fb_blur_Y3.draw(0,offset_fb_y);
     ofSetColor(255,255,255,255);
+    ofNoFill();
+    ofDrawCircle(mouseX,mouseY,30);
  
 #ifdef KINECT
    
@@ -778,6 +813,9 @@ void ofApp::draw(){
     picture_in_picture();
     reporte();
     ofDrawBitmapString(ofToString(players),1222,72);
+    int n_esporas = esporas.size();
+    ofDrawBitmapString(ofToString(n_esporas),800,72);
+    if (n_esporas<300) esporula_continuo(ofVec2f(500,500-offset_fb_y),100);
 }
 
 bool ofApp::sort_x(glm::vec2 &a, glm::vec2 &b) {
