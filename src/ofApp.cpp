@@ -80,7 +80,7 @@ void ofApp::setup(){
     box2d.setGravity(0.0,gY);
     box2d.registerGrabbing();
     box2d_esporas.init();
-    box2d_esporas.setGravity(0.0,0.1);
+    box2d_esporas.setGravity(0.0,1.f);
     box2d_esporas.registerGrabbing();
   
 
@@ -124,73 +124,65 @@ void ofApp::update(){
         box2d.setGravity(gravedadX,gravedadY);
         gY=gravedadY;
     }
-    
-    
-    
-    
-    
-
-    if ((f_shroom_1<58) && (play_shroom_1)){                  // chequea play y si no ha llegado al final
-        f_shroom_1++;                                         // avanza cuadro
-        if (!esporoma_status_1) esporoma_status_1 = true;     // activa status play
-    }
-    else {
-        if (esporoma_status_1) {                              // si llega aquí con status play es que terminó
-            puf_1 = true;                                     // esporula
-            esporoma_status_1 = false; 
-            primer_puf_1 = true;
-            num_esp_1 = 0;
+   
+    {
+        if ((f_shroom_1<58) && (play_shroom_1)){                  // chequea play y si no ha llegado al final
+            f_shroom_1++;                                         // avanza cuadro
+            if (!esporoma_status_1) esporoma_status_1 = true;     // activa status play
         }
-    }
-    
-    
-
-    if (puf_1) {
-        if (primer_puf_1) inicio_puf_1 = ofGetElapsedTimeMillis();
-        primer_puf_1 = false;
-        ahora_puf_1 = ofGetElapsedTimeMillis();
-        if ((ahora_puf_1-inicio_puf_1)>2000) {
-            esporula(punto_m1,150);
-            inicio_puf_1 = ofGetElapsedTimeMillis();
-            ++num_esp_1;
-            if (num_esp_1==3) {
-                puf_1=false;
-                wait_e1 = true;
-                wait_m1 = true;
-                tiempo_wait_e1 = true;
-                tiempo_wait_m1 = true;
-                
-            }
-        }
-    }
-    
-    
-    if (wait_e1) {
-        if (tiempo_wait_e1) wait_kill_e1 = ofGetElapsedTimeMillis();
-        tiempo_wait_e1 = false;
-        ahora_wait_e1 = ofGetElapsedTimeMillis();
-        if ((ahora_wait_e1-wait_kill_e1)>5000) {
-           wait_e1 = false;
-           kill_e1 = true;
-            tiempo_kill_e1= true;
-
-            }
-        }
-    
-    if (wait_m1) {
-        if (tiempo_wait_m1) wait_kill_m1 = ofGetElapsedTimeMillis();
-        tiempo_wait_m1 = false;
-        ahora_wait_m1 = ofGetElapsedTimeMillis();
-        if ((ahora_wait_m1-wait_kill_m1)>20000) {
-           wait_m1 = false;
-           kill_m1 = true;
-            tiempo_kill_m1 = true;
-
+        else {
+            if (esporoma_status_1) {                              // si llega aquí con status play es que terminó
+                puf_1 = true;                                     // esporula
+                esporoma_status_1 = false;
+                primer_puf_1 = true;
+                num_esp_1 = 0;
             }
         }
         
-    
-    if (kill_e1) {
+        if (puf_1) {
+            if (primer_puf_1) inicio_puf_1 = ofGetElapsedTimeMillis();
+            primer_puf_1 = false;
+            ahora_puf_1 = ofGetElapsedTimeMillis();
+            if ((ahora_puf_1-inicio_puf_1)>2000) {
+                esporula(punto_m1,150);
+                inicio_puf_1 = ofGetElapsedTimeMillis();
+                ++num_esp_1;
+                if (num_esp_1==3) {
+                    puf_1=false;
+                    wait_e1 = true;
+                    wait_m1 = true;
+                    tiempo_wait_e1 = true;
+                    tiempo_wait_m1 = true;
+                    
+                }
+            }
+        }
+        
+        if (wait_e1) {
+            if (tiempo_wait_e1) wait_kill_e1 = ofGetElapsedTimeMillis();
+            tiempo_wait_e1 = false;
+            ahora_wait_e1 = ofGetElapsedTimeMillis();
+            if ((ahora_wait_e1-wait_kill_e1)>5000) {
+                wait_e1 = false;
+                kill_e1 = true;
+                tiempo_kill_e1= true;
+                
+            }
+        }
+        
+        if (wait_m1) {
+            if (tiempo_wait_m1) wait_kill_m1 = ofGetElapsedTimeMillis();
+            tiempo_wait_m1 = false;
+            ahora_wait_m1 = ofGetElapsedTimeMillis();
+            if ((ahora_wait_m1-wait_kill_m1)>20000) {
+                wait_m1 = false;
+                kill_m1 = true;
+                tiempo_kill_m1 = true;
+                
+            }
+        }
+        
+        if (kill_e1) {
             if (tiempo_kill_e1) inicio_kill_e1 = ofGetElapsedTimeMillis();
             tiempo_kill_e1 = false;
             ahora_kill_e1 = ofGetElapsedTimeMillis();
@@ -208,8 +200,8 @@ void ofApp::update(){
                 }
             }
         }
-    
-    if (kill_m1) {
+        
+        if (kill_m1) {
             if (tiempo_kill_m1) inicio_kill_m1 = ofGetElapsedTimeMillis();
             tiempo_kill_m1 = false;
             ahora_kill_m1 = ofGetElapsedTimeMillis();
@@ -235,69 +227,63 @@ void ofApp::update(){
                 }
             }
         }
-    
-
-    
-    
-    
-    if ((f_shroom_2<58) && (play_shroom_2)){                  // chequea play y si no ha llegado al final
-        f_shroom_2++;                                       // avanza cuadro
-        if (!esporoma_status_2) esporoma_status_2 = true;     // activa status play
-    }
-    else {
-        if (esporoma_status_2) {                            // si llega aquí con status play es que terminó
-            puf_2 = true;                                     // esporula
-            esporoma_status_2 = false;                      // status stop
-            primer_puf_2 = true;
-            num_esp_2 = 0;
+        
+        if ((f_shroom_2<58) && (play_shroom_2)){                  // chequea play y si no ha llegado al final
+            f_shroom_2++;                                       // avanza cuadro
+            if (!esporoma_status_2) esporoma_status_2 = true;     // activa status play
         }
-    }
-    
-    if (puf_2) {
-        if (primer_puf_2) inicio_puf_2 = ofGetElapsedTimeMillis();
-        primer_puf_2 = false;
-        ahora_puf_2 = ofGetElapsedTimeMillis();
-        if ((ahora_puf_2-inicio_puf_2)>2000) {
-            esporula(punto_m2,150);
-            inicio_puf_2 = ofGetElapsedTimeMillis();
-            ++num_esp_2;
-            if (num_esp_2==3) {
-                puf_2=false;
-                wait_e2 = true;
-                wait_m2 = true;
-                tiempo_wait_e2 = true;
-                tiempo_wait_m2 = true;
-            }
-        }
-    }
-    
-    
-    if (wait_e2) {
-        if (tiempo_wait_e2) wait_kill_e2 = ofGetElapsedTimeMillis();
-        tiempo_wait_e2 = false;
-        ahora_wait_e2 = ofGetElapsedTimeMillis();
-        if ((ahora_wait_e2-wait_kill_e2)>5000) {
-           wait_e2 = false;
-           kill_e2 = true;
-            tiempo_kill_e2= true;
-
-            }
-        }
-    
-    if (wait_m2) {
-        if (tiempo_wait_m2) wait_kill_m2 = ofGetElapsedTimeMillis();
-        tiempo_wait_m2 = false;
-        ahora_wait_m2 = ofGetElapsedTimeMillis();
-        if ((ahora_wait_m2-wait_kill_m2)>20000) {
-           wait_m2 = false;
-           kill_m2 = true;
-            tiempo_kill_m2 = true;
-
+        else {
+            if (esporoma_status_2) {                            // si llega aquí con status play es que terminó
+                puf_2 = true;                                     // esporula
+                esporoma_status_2 = false;                      // status stop
+                primer_puf_2 = true;
+                num_esp_2 = 0;
             }
         }
         
-    
-    if (kill_e2) {
+        if (puf_2) {
+            if (primer_puf_2) inicio_puf_2 = ofGetElapsedTimeMillis();
+            primer_puf_2 = false;
+            ahora_puf_2 = ofGetElapsedTimeMillis();
+            if ((ahora_puf_2-inicio_puf_2)>2000) {
+                esporula(punto_m2,150);
+                inicio_puf_2 = ofGetElapsedTimeMillis();
+                ++num_esp_2;
+                if (num_esp_2==3) {
+                    puf_2=false;
+                    wait_e2 = true;
+                    wait_m2 = true;
+                    tiempo_wait_e2 = true;
+                    tiempo_wait_m2 = true;
+                }
+            }
+        }
+        
+        if (wait_e2) {
+            if (tiempo_wait_e2) wait_kill_e2 = ofGetElapsedTimeMillis();
+            tiempo_wait_e2 = false;
+            ahora_wait_e2 = ofGetElapsedTimeMillis();
+            if ((ahora_wait_e2-wait_kill_e2)>5000) {
+                wait_e2 = false;
+                kill_e2 = true;
+                tiempo_kill_e2= true;
+                
+            }
+        }
+        
+        if (wait_m2) {
+            if (tiempo_wait_m2) wait_kill_m2 = ofGetElapsedTimeMillis();
+            tiempo_wait_m2 = false;
+            ahora_wait_m2 = ofGetElapsedTimeMillis();
+            if ((ahora_wait_m2-wait_kill_m2)>20000) {
+                wait_m2 = false;
+                kill_m2 = true;
+                tiempo_kill_m2 = true;
+                
+            }
+        }
+        
+        if (kill_e2) {
             if (tiempo_kill_e2) inicio_kill_e2 = ofGetElapsedTimeMillis();
             tiempo_kill_e2 = false;
             ahora_kill_e2 = ofGetElapsedTimeMillis();
@@ -315,8 +301,8 @@ void ofApp::update(){
                 }
             }
         }
-    
-    if (kill_m2) {
+        
+        if (kill_m2) {
             if (tiempo_kill_m2) inicio_kill_m2 = ofGetElapsedTimeMillis();
             tiempo_kill_m2 = false;
             ahora_kill_m2 = ofGetElapsedTimeMillis();
@@ -339,70 +325,66 @@ void ofApp::update(){
                     layer_2_free = true;
                     stop_m2 = false;
                     contador_2 = 0;
-                   
+                    
                 }
             }
         }
-    
-    
-    
-    
-    if ((f_shroom_3<58) && (play_shroom_3)){                  // chequea play y si no ha llegado al final
-        f_shroom_3++;                                       // avanza cuadro
-        if (!esporoma_status_3) esporoma_status_3 = true;     // activa status play
-    }
-    else {
-        if (esporoma_status_3) {                            // si llega aquí con status play es que terminó
-            puf_3 = true;                                     // esporula
-            esporoma_status_3 = false;                      // status stop
-            primer_puf_3 = true;
-            num_esp_3 = 0;        }
-    }
-    
-    if (puf_3) {
-        if (primer_puf_3) inicio_puf_3 = ofGetElapsedTimeMillis();
-        primer_puf_3 = false;
-        ahora_puf_3 = ofGetElapsedTimeMillis();
-        if ((ahora_puf_3-inicio_puf_3)>2000) {
-            esporula(punto_m3,150);
-            inicio_puf_3 = ofGetElapsedTimeMillis();
-            ++num_esp_3;
-            if (num_esp_3==3) {
-                puf_3=false;
-                wait_e3 = true;
-                wait_m3 = true;
-                tiempo_wait_e3 = true;
-                tiempo_wait_m3 = true;
-            }
+        
+        if ((f_shroom_3<58) && (play_shroom_3)){                  // chequea play y si no ha llegado al final
+            f_shroom_3++;                                       // avanza cuadro
+            if (!esporoma_status_3) esporoma_status_3 = true;     // activa status play
         }
-    }
-    
-    if (wait_e3) {
-        if (tiempo_wait_e3) wait_kill_e3 = ofGetElapsedTimeMillis();
-        tiempo_wait_e3 = false;
-        ahora_wait_e3 = ofGetElapsedTimeMillis();
-        if ((ahora_wait_e3-wait_kill_e3)>5000) {
-           wait_e3 = false;
-           kill_e3 = true;
-            tiempo_kill_e3= true;
-
-            }
+        else {
+            if (esporoma_status_3) {                            // si llega aquí con status play es que terminó
+                puf_3 = true;                                     // esporula
+                esporoma_status_3 = false;                      // status stop
+                primer_puf_3 = true;
+                num_esp_3 = 0;        }
         }
-    
-    if (wait_m3) {
-        if (tiempo_wait_m3) wait_kill_m3 = ofGetElapsedTimeMillis();
-        tiempo_wait_m3 = false;
-        ahora_wait_m3 = ofGetElapsedTimeMillis();
-        if ((ahora_wait_m3-wait_kill_m3)>20000) {
-           wait_m3 = false;
-           kill_m3 = true;
-            tiempo_kill_m3 = true;
-
+        
+        if (puf_3) {
+            if (primer_puf_3) inicio_puf_3 = ofGetElapsedTimeMillis();
+            primer_puf_3 = false;
+            ahora_puf_3 = ofGetElapsedTimeMillis();
+            if ((ahora_puf_3-inicio_puf_3)>2000) {
+                esporula(punto_m3,150);
+                inicio_puf_3 = ofGetElapsedTimeMillis();
+                ++num_esp_3;
+                if (num_esp_3==3) {
+                    puf_3=false;
+                    wait_e3 = true;
+                    wait_m3 = true;
+                    tiempo_wait_e3 = true;
+                    tiempo_wait_m3 = true;
+                }
             }
         }
         
-    
-    if (kill_e3) {
+        if (wait_e3) {
+            if (tiempo_wait_e3) wait_kill_e3 = ofGetElapsedTimeMillis();
+            tiempo_wait_e3 = false;
+            ahora_wait_e3 = ofGetElapsedTimeMillis();
+            if ((ahora_wait_e3-wait_kill_e3)>5000) {
+                wait_e3 = false;
+                kill_e3 = true;
+                tiempo_kill_e3= true;
+                
+            }
+        }
+        
+        if (wait_m3) {
+            if (tiempo_wait_m3) wait_kill_m3 = ofGetElapsedTimeMillis();
+            tiempo_wait_m3 = false;
+            ahora_wait_m3 = ofGetElapsedTimeMillis();
+            if ((ahora_wait_m3-wait_kill_m3)>20000) {
+                wait_m3 = false;
+                kill_m3 = true;
+                tiempo_kill_m3 = true;
+                
+            }
+        }
+        
+        if (kill_e3) {
             if (tiempo_kill_e3) inicio_kill_e3 = ofGetElapsedTimeMillis();
             tiempo_kill_e3 = false;
             ahora_kill_e3 = ofGetElapsedTimeMillis();
@@ -420,8 +402,8 @@ void ofApp::update(){
                 }
             }
         }
-    
-    if (kill_m3) {
+        
+        if (kill_m3) {
             if (tiempo_kill_m3) inicio_kill_m3 = ofGetElapsedTimeMillis();
             tiempo_kill_m3 = false;
             ahora_kill_m3 = ofGetElapsedTimeMillis();
@@ -447,6 +429,7 @@ void ofApp::update(){
                 }
             }
         }
+    }
     
 #ifdef KINECT
     kinect.update();
@@ -465,13 +448,13 @@ void ofApp::update(){
         contourFinder.setFindHoles(false);
         contourFinder.setSimplify(false);
         
-        //players = contourFinder.size();
+        players = contourFinder.size();
         
       
     }
 #endif
     
-    players = modo;  // cambiar por contourFinder.size
+   // players = modo;  // cambiar por contourFinder.size
     
     if (players<4) {
         if (players!=antiguos) {
@@ -688,7 +671,7 @@ void ofApp::esporula_continuo(ofVec2f punto, int espora) {
     
     for (int i=0;i<espora;i++) {
         auto particle = make_shared<CustomParticle>(box2d_esporas.getWorld(), ofRandom(500)+500, ofRandom(500));
-        particle->color.set(rojo,verde,azul,255);
+       // particle->color.set(rojo,verde,azul,255);
         particle->setRadius(0.05);
         esporas.push_back(particle);
     }
@@ -794,8 +777,8 @@ void ofApp::draw(){
         m2.x=pl2.x;
         m2.y=pl2.y;
         
-        //ofDrawCircle(m1,20);
-        //ofDrawCircle(m2,20);
+        ofDrawCircle(m1,20);
+        ofDrawCircle(m2,20);
     }
 #endif
 
@@ -815,7 +798,7 @@ void ofApp::draw(){
     ofDrawBitmapString(ofToString(players),1222,72);
     int n_esporas = esporas.size();
     ofDrawBitmapString(ofToString(n_esporas),800,72);
-    if (n_esporas<300) esporula_continuo(ofVec2f(500,500-offset_fb_y),100);
+    if (n_esporas<100) esporula_continuo(ofVec2f(500,500-offset_fb_y),50);
 }
 
 bool ofApp::sort_x(glm::vec2 &a, glm::vec2 &b) {
@@ -851,7 +834,7 @@ void ofApp::callampas_1(int seta, ofVec2f pos) {
             Leucocoprinus.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
     }
         if (seta==4) {
-            Morchella.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
+            Morchella.getFrame(f_shroom_1/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
     }
     
 fb_esporomas_1.end();
@@ -875,7 +858,7 @@ void ofApp::callampas_2(int seta, ofVec2f pos) {
             Leucocoprinus.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
     }
         if (seta==4) {
-            Morchella.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-90,100,150);
+            Morchella.getFrame(f_shroom_2/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
     }
     
 fb_esporomas_2.end();
@@ -899,7 +882,7 @@ void ofApp::callampas_3(int seta, ofVec2f pos) {
             Leucocoprinus.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-100,100,150);
     }
         if (seta==4) {
-            Morchella.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-90,100,150);
+            Morchella.getFrame(f_shroom_3/2)->draw(pos.x-50,pos.y+offset_fb_y-120,100,150);
     }
     
 fb_esporomas_3.end();
@@ -1300,7 +1283,7 @@ void ofApp::gui_settings() {
     gui1.add(maximo.set("max",180, 0, 255));
     gui1.add(altura_micelio.set("altura micelio",-223, -250, 100));
     gui1.add(cerca.set("umbral cerca",240, 50, 255)); //UMBRAL SALA
-    gui1.add(lejos.set("umbral lejos",120, 0, 150));   //UMBRAL SALA
+    gui1.add(lejos.set("umbral lejos",50, 0, 150));   //UMBRAL SALA
     
     gui2.setup("player 1");
     gui2.setPosition(220,10);
